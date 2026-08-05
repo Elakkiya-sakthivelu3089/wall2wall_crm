@@ -3,7 +3,7 @@ import DataTable from '../components/ui/DataTable';
 import type { Column } from '../components/ui/DataTable';
 import { leadService } from '../services/api';
 import type { Lead, MasterData } from '../types/crm';
-import { 
+import {
   Users, 
   Plus, 
   RefreshCw, 
@@ -14,8 +14,11 @@ import {
   Trash2
 } from 'lucide-react';
 import LeadModal from '../components/modals/LeadModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const LeadHub: React.FC = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const [leads, setLeads] = useState<Lead[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -285,33 +288,37 @@ const LeadHub: React.FC = () => {
             onChange={handleFileChange} 
             accept=".csv,.xlsx,.xls"
           />
-          <button 
-            onClick={handleUpdateProjects}
-            className="btn-custom !bg-brand hover:!bg-[#004d30] !rounded-full !px-3 sm:!px-4 !py-1.5 text-[10px] sm:text-[11px] flex items-center justify-center gap-1.5 sm:gap-2"
-          >
-            <RefreshCw size={14} className="shrink-0" /> <span className="truncate">Update Projects</span>
-          </button>
-          <button 
-            onClick={handleFileUploadClick}
-            className="btn-custom !bg-brand hover:!bg-[#004d30] !rounded-full !px-3 sm:!px-4 !py-1.5 text-[10px] sm:text-[11px] flex items-center justify-center gap-1.5 sm:gap-2"
-          >
-            <FileUp size={14} className="shrink-0" /> <span className="truncate">Custom Upload</span>
-          </button>
-          <button 
-            onClick={handleFileUploadClick}
-            className="btn-custom !bg-brand hover:!bg-[#004d30] !rounded-full !px-3 sm:!px-4 !py-1.5 text-[10px] sm:text-[11px] flex items-center justify-center gap-1.5 sm:gap-2"
-          >
-            <Upload size={14} className="shrink-0" /> <span className="truncate">Upload Lead</span>
-          </button>
-          <button 
-            onClick={() => {
-              setLeadToEdit(undefined);
-              setIsModalOpen(true);
-            }}
-            className="btn-custom !bg-brand hover:!bg-[#004d30] !rounded-full !px-3 sm:!px-4 !py-1.5 text-[10px] sm:text-[11px] flex items-center justify-center gap-1.5 sm:gap-2 col-span-2 sm:col-auto"
-          >
-            <Plus size={14} className="shrink-0" /> <span className="truncate">Create Lead</span>
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                onClick={handleUpdateProjects}
+                className="btn-custom !bg-brand hover:!bg-[#004d30] !rounded-full !px-3 sm:!px-4 !py-1.5 text-[10px] sm:text-[11px] flex items-center justify-center gap-1.5 sm:gap-2"
+              >
+                <RefreshCw size={14} className="shrink-0" /> <span className="truncate">Update Projects</span>
+              </button>
+              <button
+                onClick={handleFileUploadClick}
+                className="btn-custom !bg-brand hover:!bg-[#004d30] !rounded-full !px-3 sm:!px-4 !py-1.5 text-[10px] sm:text-[11px] flex items-center justify-center gap-1.5 sm:gap-2"
+              >
+                <FileUp size={14} className="shrink-0" /> <span className="truncate">Custom Upload</span>
+              </button>
+              <button
+                onClick={handleFileUploadClick}
+                className="btn-custom !bg-brand hover:!bg-[#004d30] !rounded-full !px-3 sm:!px-4 !py-1.5 text-[10px] sm:text-[11px] flex items-center justify-center gap-1.5 sm:gap-2"
+              >
+                <Upload size={14} className="shrink-0" /> <span className="truncate">Upload Lead</span>
+              </button>
+              <button
+                onClick={() => {
+                  setLeadToEdit(undefined);
+                  setIsModalOpen(true);
+                }}
+                className="btn-custom !bg-brand hover:!bg-[#004d30] !rounded-full !px-3 sm:!px-4 !py-1.5 text-[10px] sm:text-[11px] flex items-center justify-center gap-1.5 sm:gap-2 col-span-2 sm:col-auto"
+              >
+                <Plus size={14} className="shrink-0" /> <span className="truncate">Create Lead</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 

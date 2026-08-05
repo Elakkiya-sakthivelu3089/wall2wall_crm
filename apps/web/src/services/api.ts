@@ -37,13 +37,19 @@ export const leadService = {
     page: number, 
     limit: number, 
     search?: string, 
+    statusIds?: string[],
     statusId?: string, 
+    projectIds?: string[],
     brandId?: string, 
+    brandIds?: string[],
     projectId?: string, 
+    sourceIds?: string[],
     tagId?: string, 
     stageId?: string,
+    stageIds?: string[],
     rating?: string | number,
     timeframe?: string,
+    contactDate?: string,
     assignedToIds?: string[]
   }): Promise<{ data: Lead[], total: number }> => {
     const response = await axios.post(`${API_BASE_URL}/leads/list`, params);

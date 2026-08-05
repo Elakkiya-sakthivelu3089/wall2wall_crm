@@ -1,9 +1,22 @@
 import prisma from '../lib/prisma.js';
 import type { Request, Response } from 'express';
 import { asyncHandler, apiResponse } from '../utils/apiUtils.js';
+import { applyLeadVisibility, getRequestUser } from '../utils/leadAccess.js';
 
 
 export const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
+  const currentUser = getRequestUser(req);
+  const leadScope: any = {};
+  await applyLeadVisibility(leadScope, currentUser);
+  const scopedLeadWhere = (extra: any = {}) => ({
+    ...extra,
+    ...leadScope,
+    AND: [
+      ...(extra.AND || []),
+      ...(leadScope.AND || []),
+    ],
+  });
+
   const [
     freshLeads,
     yetToFollowUp,
@@ -21,39 +34,39 @@ export const getDashboardStats = asyncHandler(async (req: Request, res: Response
   ] = await Promise.all([
     // Count leads by status/type
     prisma.lead.count({
-      where: {
+      where: scopedLeadWhere({
         OR: [
           { status: { name: 'Fresh' } },
           { statusId: null }
         ]
-      }
+      })
     }),
-    prisma.lead.count({ where: { status: { name: 'Yet To Follow-up' } } }),
-    prisma.lead.count({ where: { status: { name: 'Follow-up' } } }),
-    prisma.lead.count({ where: { status: { name: 'Opportunities' } } }),
-    prisma.lead.count({ where: { status: { name: 'Order Booked' } } }),
+    prisma.lead.count({ where: scopedLeadWhere({ status: { name: 'Yet To Follow-up' } }) }),
+    prisma.lead.count({ where: scopedLeadWhere({ status: { name: 'Follow-up' } }) }),
+    prisma.lead.count({ where: scopedLeadWhere({ status: { name: 'Opportunities' } }) }),
+    prisma.lead.count({ where: scopedLeadWhere({ status: { name: 'Order Booked' } }) }),
     
     // Other modules
-    prisma.showroomVisit.count(),
-    prisma.appointment.count(),
+    prisma.showroomVisit.count({ where: { lead: leadScope } }),
+    prisma.appointment.count({ where: { lead: leadScope } }),
     
     // Disqualified
-    prisma.lead.count({ where: { status: { name: 'Disqualified' } } }),
+    prisma.lead.count({ where: scopedLeadWhere({ status: { name: 'Disqualified' } }) }),
     
     // Tasks
-    prisma.task.count({ where: { status: 'TODO' } }),
+    prisma.task.count({ where: { status: 'TODO', lead: leadScope } }),
     
     // CRE Leads (Assigned but not fresh)
-    prisma.lead.count({ where: { NOT: { assignedToId: null } } }),
+    prisma.lead.count({ where: scopedLeadWhere({ NOT: { assignedToId: null } }) }),
 
     // Design Completed
-    prisma.lead.count({ where: { status: { name: 'Design Completed' } } }),
+    prisma.lead.count({ where: scopedLeadWhere({ status: { name: 'Design Completed' } }) }),
 
     // Feasibility Desk
-    prisma.lead.count({ where: { status: { name: { contains: 'Feasibility', mode: 'insensitive' } } } }),
+    prisma.lead.count({ where: scopedLeadWhere({ status: { name: { contains: 'Feasibility', mode: 'insensitive' } } }) }),
 
     // Design Allocation
-    prisma.lead.count({ where: { status: { name: { contains: 'Design', mode: 'insensitive' } } } }),
+    prisma.lead.count({ where: scopedLeadWhere({ status: { name: { contains: 'Design', mode: 'insensitive' } } }) }),
   ]);
 
   apiResponse.success(res, {

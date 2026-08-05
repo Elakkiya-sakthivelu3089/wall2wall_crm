@@ -87,7 +87,7 @@ const App: React.FC = () => {
           <Route path="/users" element={<AdminRoute><Users /></AdminRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/signature-photos" element={<AdminRoute><SignaturePhoto /></AdminRoute>} />
-          <Route path="/report" element={<AdminRoute><Report /></AdminRoute>} />
+          <Route path="/report" element={<ProtectedRoute><Report /></ProtectedRoute>} />
           <Route path="/reminders" element={<ProtectedRoute><Reminders /></ProtectedRoute>} />
           
           {/* Master Data Routes — ADMIN ONLY */}

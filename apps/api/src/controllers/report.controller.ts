@@ -1,12 +1,26 @@
 import prisma from '../lib/prisma.js';
 import type { Request, Response } from 'express';
 import { asyncHandler, apiResponse } from '../utils/apiUtils.js';
+import { applyLeadVisibility, getAssignableUsersClause, getRequestUser } from '../utils/leadAccess.js';
 
 
 export const getUserPerformance = asyncHandler(async (req: Request, res: Response) => {
+  const currentUser = getRequestUser(req);
+  const leadScope: any = {};
+  await applyLeadVisibility(leadScope, currentUser);
+  const scopedLeadWhere = (extra: any = {}) => ({
+    ...extra,
+    ...leadScope,
+    AND: [
+      ...(extra.AND || []),
+      ...(leadScope.AND || []),
+      ...(Object.keys(extra).some(key => key !== 'AND') && Object.keys(leadScope).some(key => key !== 'AND') ? [extra, leadScope] : []),
+    ],
+  });
+
   // Fetch all active users (you can filter by role if needed)
   const users = await prisma.user.findMany({
-    where: { status: true },
+    where: getAssignableUsersClause(currentUser),
     select: { id: true, fullName: true, role: true }
   });
 
@@ -27,7 +41,8 @@ export const getUserPerformance = asyncHandler(async (req: Request, res: Respons
         OR: [
           { type: { contains: 'call', mode: 'insensitive' } },
           { content: { contains: 'call', mode: 'insensitive' } }
-        ]
+        ],
+        lead: leadScope
       }
     });
 
@@ -38,7 +53,8 @@ export const getUserPerformance = asyncHandler(async (req: Request, res: Respons
         OR: [
           { type: { contains: 'proposal', mode: 'insensitive' } },
           { content: { contains: 'proposal', mode: 'insensitive' } }
-        ]
+        ],
+        lead: leadScope
       }
     });
 
@@ -49,7 +65,8 @@ export const getUserPerformance = asyncHandler(async (req: Request, res: Respons
         OR: [
           { type: { contains: 'measurement', mode: 'insensitive' } },
           { content: { contains: 'measurement', mode: 'insensitive' } }
-        ]
+        ],
+        lead: leadScope
       }
     });
 
@@ -58,28 +75,26 @@ export const getUserPerformance = asyncHandler(async (req: Request, res: Respons
     // Since showroomVisit doesn't have userId directly, we check visits for leads assigned to the user.
     const srv = await prisma.showroomVisit.count({
       where: {
-        lead: {
-          assignedToId: user.id
-        }
+        lead: scopedLeadWhere({ assignedToId: user.id })
       }
     });
 
     // 5. ORDERS (Order Booked)
     const orders = await prisma.lead.count({
-      where: {
+      where: scopedLeadWhere({
         assignedToId: user.id,
-        status: { name: 'Order Booked' }
-      }
+        status: { name: 'Order Booked' },
+      })
     });
 
     // Helper to get ratings for a specific timeframe
     const getRatingsForTimeframe = async (startDate: Date) => {
       const leads = await prisma.lead.findMany({
-        where: {
+        where: scopedLeadWhere({
           assignedToId: user.id,
           createdAt: { gte: startDate },
-          rating: { gte: 5, lte: 9 }
-        },
+          rating: { gte: 5, lte: 9 },
+        }),
         select: { rating: true }
       });
 
@@ -116,7 +131,12 @@ export const getUserPerformance = asyncHandler(async (req: Request, res: Respons
 });
 
 export const getLeadsMasterReport = asyncHandler(async (req: Request, res: Response) => {
+  const currentUser = getRequestUser(req);
+  const where: any = {};
+  await applyLeadVisibility(where, currentUser);
+
   const leads = await prisma.lead.findMany({
+    where,
     include: {
       source: true,
       project: true,

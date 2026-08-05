@@ -148,11 +148,7 @@ const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
 
       <div className="p-4 md:p-5 space-y-6">
         {/* Actions Grid */}
-        {isDmEmployee ? (
-          <div className="rounded border border-sky-100 bg-sky-50 px-4 py-3 text-[11px] font-bold text-sky-700 uppercase tracking-wide">
-            DM Executive access: view lead details and progress only.
-          </div>
-        ) : (
+        {!isDmEmployee && (
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2">
              <ActionButton icon={Edit2} label="Edit" color="bg-brand" onClick={() => setIsEditModalOpen(true)} />
              <ActionButton icon={Activity} label="Followup" color="bg-secondary" onClick={() => setModalType('FOLLOWUP')} />

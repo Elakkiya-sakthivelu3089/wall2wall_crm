@@ -112,3 +112,28 @@ export const ensureLeadAssignAccess = async (leadId: string, targetUserId: strin
     throw { status: 403, message: 'Business heads can assign leads only to themselves or their employees.' };
   }
 };
+
+export const getAssignableUsersClause = (user: RequestUser): any => {
+  if (user.role === 'ADMIN') {
+    return {
+      status: true,
+      role: { not: DM_EXECUTIVE_ROLE },
+    };
+  }
+
+  if (user.role === 'BUSINESS_HEAD' && user.id) {
+    return {
+      status: true,
+      role: { not: DM_EXECUTIVE_ROLE },
+      OR: [
+        { id: user.id },
+        { businessHeadId: user.id },
+      ],
+    };
+  }
+
+  return {
+    status: true,
+    id: user.id || '__no_assignable_users__',
+  };
+};

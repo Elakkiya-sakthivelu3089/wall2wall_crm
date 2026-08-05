@@ -225,7 +225,7 @@ export const getContactableCounts = asyncHandler(async (req: Request, res: Respo
     monthEnd.setMonth(monthEnd.getMonth() + 1);
 
     const filter: any = {};
-    if (userId && currentUser.role === 'ADMIN') {
+    if (userId && (currentUser.role === 'ADMIN' || currentUser.role === 'BUSINESS_HEAD')) {
       filter.assignedToId = String(userId);
     }
     await applyLeadVisibility(filter, currentUser);
@@ -569,10 +569,16 @@ export const updateLead = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const assignLead = asyncHandler(async (req: Request, res: Response) => {
-  ensureLeadManageAccess(req);
   const currentUser = getRequestUser(req);
   const { id } = req.params;
   const { user_id } = req.body;
+  await ensureLeadAssignAccess(String(id), user_id ? String(user_id) : null, currentUser);
+
+  const actor = currentUser.id
+    ? await prisma.user.findUnique({ where: { id: currentUser.id }, select: { fullName: true } })
+    : null;
+  const actorName = actor?.fullName || 'User';
+
   const targetUser = user_id
     ? await prisma.user.findUnique({
         where: { id: String(user_id) },
@@ -589,8 +595,8 @@ export const assignLead = asyncHandler(async (req: Request, res: Response) => {
       leadId: updated.id,
       type: 'ASSIGNMENT',
       content: user_id
-        ? `Lead reassigned to ${targetUser?.fullName || 'Unknown User'}${targetUser?.role ? ` (${targetUser.role})` : ''}`
-        : `Lead unassigned`,
+        ? `Lead assigned by ${actorName} to ${targetUser?.fullName || 'Unknown User'}${targetUser?.role ? ` (${targetUser.role})` : ''}`
+        : `Lead unassigned by ${actorName}`,
       userId: currentUser.id || null
     }
   });
@@ -599,9 +605,9 @@ export const assignLead = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const addActivity = asyncHandler(async (req: Request, res: Response) => {
-  ensureLeadManageAccess(req);
   const currentUser = getRequestUser(req);
   const { id } = req.params;
+  await ensureLeadViewAccess(String(id), currentUser);
   const { type, content, userId } = req.body;
   const activity = await prisma.leadActivity.create({
     data: {
@@ -617,7 +623,8 @@ export const addActivity = asyncHandler(async (req: Request, res: Response) => {
 
 export const getLead = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  await ensureLeadViewAccess(req, String(id));
+  const currentUser = getRequestUser(req);
+  await ensureLeadViewAccess(String(id), currentUser);
   const lead = await prisma.lead.findUnique({
     where: { id: String(id) },
     include: {
@@ -647,13 +654,22 @@ export const getLead = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const bulkAssignLeads = asyncHandler(async (req: Request, res: Response) => {
-  ensureLeadManageAccess(req);
   const currentUser = getRequestUser(req);
   const { leadIds, userId } = req.body;
   
   if (!leadIds || !Array.isArray(leadIds) || leadIds.length === 0) {
     return apiResponse.error(res, 'Lead IDs are required', 400);
   }
+
+  const normalizedLeadIds = leadIds.map(id => String(id));
+  await Promise.all(normalizedLeadIds.map(leadId =>
+    ensureLeadAssignAccess(leadId, userId ? String(userId) : null, currentUser)
+  ));
+
+  const actor = currentUser.id
+    ? await prisma.user.findUnique({ where: { id: currentUser.id }, select: { fullName: true } })
+    : null;
+  const actorName = actor?.fullName || 'User';
 
   const targetUser = userId
     ? await prisma.user.findUnique({
@@ -663,17 +679,17 @@ export const bulkAssignLeads = asyncHandler(async (req: Request, res: Response) 
     : null;
 
   await prisma.lead.updateMany({
-    where: { id: { in: leadIds.map(id => String(id)) } },
+    where: { id: { in: normalizedLeadIds } },
     data: { assignedToId: userId ? String(userId) : null },
   });
 
   // Create activities for each lead
-  const activities = leadIds.map(id => ({
+  const activities = normalizedLeadIds.map(id => ({
     leadId: String(id),
     type: 'ASSIGNMENT',
     content: userId
-      ? `Lead reassigned to ${targetUser?.fullName || 'Unknown User'}${targetUser?.role ? ` (${targetUser.role})` : ''} via bulk assignment`
-      : `Lead unassigned via bulk assignment`,
+      ? `Lead assigned by ${actorName} to ${targetUser?.fullName || 'Unknown User'}${targetUser?.role ? ` (${targetUser.role})` : ''} via bulk assignment`
+      : `Lead unassigned by ${actorName} via bulk assignment`,
     userId: currentUser.id || null,
   }));
 
@@ -685,12 +701,8 @@ export const bulkAssignLeads = asyncHandler(async (req: Request, res: Response) 
 export const deleteLead = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const user = getRequestUser(req);
-
-  if (user.role !== 'ADMIN' && user.role !== 'BUSINESS_HEAD') {
-    return apiResponse.error(res, 'You are not authorized to delete leads', 403);
-  }
-
   const leadId = String(id);
+  await ensureLeadDeleteAccess(leadId, user);
 
   try {
     await prisma.$transaction(async (tx) => {

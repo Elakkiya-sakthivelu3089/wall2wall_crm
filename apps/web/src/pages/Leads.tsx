@@ -11,7 +11,7 @@ import LeadModal from '../components/modals/LeadModal';
 import { useAuth } from '../contexts/AuthContext';
 
 interface MasterItem { id: string; name: string; }
-interface MasterUser { id: string; fullName: string; }
+interface MasterUser { id: string; fullName: string; role?: string; }
 
 const Leads: React.FC = () => {
   const { user } = useAuth();
@@ -34,6 +34,8 @@ const Leads: React.FC = () => {
   const [stageId, setStageId] = useState('');
   const [rating, setRating] = useState('');
   const [timeframe, setTimeframe] = useState('');
+  const [contactDate, setContactDate] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState('');
 
   const [activeView, setActiveView] = useState<'LIST' | 'DETAIL'>('LIST');
 
@@ -51,13 +53,14 @@ const Leads: React.FC = () => {
         stageId: stageId || undefined,
         rating: rating || undefined,
         timeframe: timeframe || undefined,
-        assignedToIds: user?.role === 'ADMIN' || user?.role === 'DM_EXECUTIVE' ? undefined : (user?.id ? [user.id] : []),
+        contactDate: contactDate || undefined,
+        assignedToIds: selectedUserId ? [selectedUserId] : undefined,
       });
       setLeads(res.data);
       setTotal(res.total);
       
       if (res.data.length > 0 && !selectedLead && window.innerWidth >= 1024) {
-        setSelectedLead(res.data[0]);
+        fetchLeadDetail(res.data[0].id);
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
@@ -68,7 +71,7 @@ const Leads: React.FC = () => {
 
   const fetchCounts = async () => {
     try {
-      const userId = user?.role === 'ADMIN' ? undefined : user?.id;
+      const userId = selectedUserId || (user?.role === 'ADMIN' || user?.role === 'BUSINESS_HEAD' ? undefined : user?.id);
       const res = await leadService.getContactableCounts(userId);
       setCounts(res);
     } catch (error) {
@@ -105,7 +108,13 @@ const Leads: React.FC = () => {
       fetchLeads();
     }, 500); // 500ms debounce for search input
     return () => clearTimeout(timer);
-  }, [page, search, statusId, brandId, projectId, tagId, stageId, rating, timeframe]);
+  }, [page, search, statusId, brandId, projectId, tagId, stageId, rating, timeframe, contactDate, selectedUserId]);
+
+  useEffect(() => {
+    fetchCounts();
+  }, [selectedUserId]);
+
+  const canFilterUsers = user?.role === 'ADMIN' || user?.role === 'BUSINESS_HEAD';
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -147,9 +156,19 @@ const Leads: React.FC = () => {
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-gray-400 uppercase">Users</label>
-            <select disabled={user?.role !== 'ADMIN'} className="form-control !py-1 !px-2 !text-[11px]">
-              <option value="">{user?.role === 'ADMIN' ? '-Select-' : user?.fullName}</option>
-              {user?.role === 'ADMIN' && masters?.users.map((u: MasterUser) => <option key={u.id} value={u.id}>{u.fullName}</option>)}
+            <select
+              disabled={!canFilterUsers}
+              value={selectedUserId}
+              onChange={(e) => {
+                setSelectedUserId(e.target.value);
+                setPage(1);
+              }}
+              className="form-control !py-1 !px-2 !text-[11px]"
+            >
+              <option value="">{canFilterUsers ? 'All Allowed Users' : user?.fullName}</option>
+              {canFilterUsers && masters?.users.map((u: MasterUser) => (
+                <option key={u.id} value={u.id}>{u.fullName}{u.role ? ` (${u.role})` : ''}</option>
+              ))}
             </select>
           </div>
           <div className="space-y-1">
@@ -168,8 +187,16 @@ const Leads: React.FC = () => {
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-gray-400 uppercase">Timeline</label>
-            <select value={timeframe} onChange={(e) => setTimeframe(e.target.value)} className="form-control !py-1 !px-2 !text-[11px]">
-              <option value="">All (Due Today or Earlier)</option>
+            <select
+              value={timeframe}
+              onChange={(e) => {
+                setTimeframe(e.target.value);
+                if (e.target.value) setContactDate('');
+                setPage(1);
+              }}
+              className="form-control !py-1 !px-2 !text-[11px]"
+            >
+              <option value="">All</option>
               <option value="overdue">Overdue Only</option>
               <option value="today">Due Today</option>
               <option value="tomorrow">Tomorrow</option>
@@ -183,6 +210,19 @@ const Leads: React.FC = () => {
               <option value="">-Select-</option>
               {masters?.statuses.map((s: MasterItem) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase">Date Wise</label>
+            <input
+              type="date"
+              value={contactDate}
+              onChange={(e) => {
+                setContactDate(e.target.value);
+                if (e.target.value) setTimeframe('');
+                setPage(1);
+              }}
+              className="form-control !py-1 !px-2 !text-[11px]"
+            />
           </div>
         </div>
       </div>
@@ -275,7 +315,7 @@ const Leads: React.FC = () => {
       {/* Bottom Panel Counts */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4">
          {[
-           { label: 'Upto Today', count: counts.today, color: 'bg-dark' },
+           { label: 'Upto Today', count: counts.uptoToday, color: 'bg-dark' },
            { label: 'Today', count: counts.today, color: 'bg-secondary' },
            { label: 'Tomorrow', count: counts.tomorrow, color: 'bg-brand' },
            { label: 'This Week', count: counts.week, color: 'bg-info' },

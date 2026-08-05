@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { asyncHandler, apiResponse } from '../utils/apiUtils.js';
+import { getAssignableUsersClause, getRequestUser } from '../utils/leadAccess.js';
 
 
 // Whitelist of models that can be managed via master CRUD
@@ -18,7 +19,8 @@ const validateModel = (type: string) => {
   return (prisma as any)[type];
 };
 
-export const getMasters = asyncHandler(async (_req, res) => {
+export const getMasters = asyncHandler(async (req, res) => {
+  const currentUser = getRequestUser(req);
   const models = {
     showrooms: prisma.showroom,
     sources: prisma.source,
@@ -50,7 +52,7 @@ export const getMasters = asyncHandler(async (_req, res) => {
 
     if (key === 'users') {
       results[key] = await (model as any).findMany({
-        where: { status: true },
+        where: getAssignableUsersClause(currentUser),
         select: { id: true, fullName: true, role: true }
       });
     } else if (key === 'bankDetails') {
