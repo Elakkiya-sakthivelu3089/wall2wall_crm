@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   X, 
-  Calendar, 
   MessageSquare, 
   CheckCircle, 
   Bell, 
@@ -17,7 +16,7 @@ interface ActionModalProps {
   onClose: () => void;
   onSuccess: () => void;
   lead: Lead;
-  type: 'FOLLOWUP' | 'REMINDER' | 'STATUS' | 'NOTE' | 'APPOINTMENT' | 'SWITCH_USER';
+  type: 'FOLLOWUP' | 'REMINDER' | 'STATUS' | 'NOTE' | 'SWITCH_USER';
 }
 
 const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onSuccess, lead, type }) => {
@@ -111,17 +110,6 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onSuccess, l
         }
       }
 
-      if (type === 'APPOINTMENT') {
-        await leadService.createAppointment({
-          leadId: lead.id,
-          appointmentDate: formData.nextFollowUp,
-          comments: formData.content
-        });
-        onSuccess();
-        onClose();
-        return;
-      }
-
       await leadService.addLeadActivity(lead.id, {
         type: type === 'FOLLOWUP' ? (formData.activityType || 'PHONE') : formData.type || 'NOTE',
         content: activityContent
@@ -144,7 +132,6 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onSuccess, l
       case 'FOLLOWUP': return 'Record Follow-up';
       case 'REMINDER': return 'Set Reminder';
       case 'STATUS': return 'Change Status';
-      case 'APPOINTMENT': return 'Book Appointment';
       case 'SWITCH_USER': return 'Assign Lead';
       default: return 'Add Internal Note';
     }
@@ -155,7 +142,6 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onSuccess, l
       case 'FOLLOWUP': return <Activity className="w-6 h-6" />;
       case 'REMINDER': return <Bell className="w-6 h-6" />;
       case 'STATUS': return <CheckCircle className="w-6 h-6" />;
-      case 'APPOINTMENT': return <Calendar className="w-6 h-6" />;
       case 'SWITCH_USER': return <User className="w-6 h-6" />;
       default: return <MessageSquare className="w-6 h-6" />;
     }
@@ -283,7 +269,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onSuccess, l
                         <div className="grid grid-cols-2 gap-4">
                            <div className="space-y-1.5">
                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                              Assign Next Task To
+                              Assign Reminder To
                             </label>
                             <select 
                               className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/10 focus:border-brand outline-none transition-all font-bold text-[#313a46]"
@@ -316,7 +302,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onSuccess, l
                  </div>
               )}
 
-              {(type === 'STATUS' || type === 'REMINDER' || type === 'APPOINTMENT') && (
+              {(type === 'STATUS' || type === 'REMINDER') && (
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                     {type === 'STATUS' ? 'Transition Schedule Date' : 'Target Schedule Date'}

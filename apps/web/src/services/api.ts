@@ -127,68 +127,6 @@ export const leadService = {
     return response.data;
   },
 
-  // Tasks
-  getTasks: async (params: any): Promise<{ data: any[], total: number }> => {
-    const response = await axios.post(`${API_BASE_URL}/tasks/list`, params);
-    return response.data.data;
-  },
-
-  createTask: async (taskData: any): Promise<any> => {
-    const response = await axios.post(`${API_BASE_URL}/tasks`, taskData);
-    return response.data.data;
-  },
-
-  updateTask: async (taskId: string, taskData: any): Promise<any> => {
-    const response = await axios.put(`${API_BASE_URL}/tasks/${taskId}`, taskData);
-    return response.data.data;
-  },
-
-  deleteTask: async (taskId: string): Promise<any> => {
-    const response = await axios.delete(`${API_BASE_URL}/tasks/${taskId}`);
-    return response.data;
-  },
-
-  // Appointments
-  getAppointments: async (params: any): Promise<{ data: any[], total: number }> => {
-     const response = await axios.post(`${API_BASE_URL}/tasks/appointments/list`, params);
-     return response.data.data;
-  },
-
-  getVisits: async (params: any): Promise<{ data: any[], total: number }> => {
-     const response = await axios.post(`${API_BASE_URL}/visits/list`, params);
-     return response.data.data;
-  },
-
-  createVisit: async (visitData: any): Promise<any> => {
-     const response = await axios.post(`${API_BASE_URL}/visits`, visitData);
-     return response.data.data;
-  },
-
-  updateVisit: async (id: string, visitData: any): Promise<any> => {
-     const response = await axios.put(`${API_BASE_URL}/visits/${id}`, visitData);
-     return response.data.data;
-  },
-
-  deleteVisit: async (id: string): Promise<any> => {
-     const response = await axios.delete(`${API_BASE_URL}/visits/${id}`);
-     return response.data;
-  },
-
-  createAppointment: async (appointmentData: any): Promise<any> => {
-     const response = await axios.post(`${API_BASE_URL}/tasks/appointments`, appointmentData);
-     return response.data.data;
-  },
-
-  updateAppointment: async (id: string, appointmentData: any): Promise<any> => {
-     const response = await axios.put(`${API_BASE_URL}/tasks/appointments/${id}`, appointmentData);
-     return response.data.data;
-  },
-
-  deleteAppointment: async (id: string): Promise<any> => {
-     const response = await axios.delete(`${API_BASE_URL}/tasks/appointments/${id}`);
-     return response.data;
-  },
-
   // Users
   getUsers: async (): Promise<User[]> => {
     const response = await axios.get(`${API_BASE_URL}/users`);

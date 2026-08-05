@@ -1,7 +1,6 @@
 import { useState, type ElementType, type FC } from 'react';
 import { 
   Mail, 
-  Calendar, 
   Star, 
   MessageSquare,
   User,
@@ -16,7 +15,6 @@ import {
   Share2,
   Lock,
   Smartphone,
-  LayoutGrid,
   Trash2
 } from 'lucide-react';
 import type { Lead } from '../../types/crm';
@@ -50,7 +48,7 @@ const ActionButton = ({ icon: Icon, label, color = 'bg-brand', onClick }: Action
 const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
   const { user: currentUser } = useAuth();
   const isDmEmployee = currentUser?.role === 'DM_EXECUTIVE';
-  const [modalType, setModalType] = useState<'FOLLOWUP' | 'REMINDER' | 'STATUS' | 'NOTE' | 'APPOINTMENT' | 'SWITCH_USER' | null>(null);
+  const [modalType, setModalType] = useState<'FOLLOWUP' | 'REMINDER' | 'STATUS' | 'NOTE' | 'SWITCH_USER' | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleDelete = async () => {
@@ -153,13 +151,11 @@ const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
              <ActionButton icon={Edit2} label="Edit" color="bg-brand" onClick={() => setIsEditModalOpen(true)} />
              <ActionButton icon={Activity} label="Followup" color="bg-secondary" onClick={() => setModalType('FOLLOWUP')} />
              <ActionButton icon={Bell} label="Reminder" color="bg-brand" onClick={() => setModalType('REMINDER')} />
-             <ActionButton icon={Calendar} label="Appointment" color="bg-brand" onClick={() => setModalType('APPOINTMENT')} />
              <ActionButton icon={FileText} label="Requirement" color="bg-brand" onClick={() => setModalType('NOTE')} />
              <ActionButton icon={Lock} label="Online Req." color="bg-brand" onClick={() => setModalType('NOTE')} />
              <ActionButton icon={Smartphone} label="Contact" color="bg-brand" onClick={() => setModalType('NOTE')} />
              <ActionButton icon={Mail} label="Email" color="bg-brand" onClick={() => setModalType('NOTE')} />
              <ActionButton icon={MessageSquare} label="SMS" color="bg-brand" onClick={() => setModalType('NOTE')} />
-             <ActionButton icon={LayoutGrid} label="Showroom" color="bg-brand" onClick={() => setModalType('APPOINTMENT')} />
              {currentUser?.role === 'ADMIN' && <ActionButton icon={UserPlus} label="Switch" color="bg-brand" onClick={() => setModalType('SWITCH_USER')} />}
              <ActionButton icon={CheckCircle} label="KYC Form" color="bg-brand" onClick={() => setModalType('STATUS')} />
              {(currentUser?.role === 'ADMIN' || currentUser?.role === 'BUSINESS_HEAD') && (

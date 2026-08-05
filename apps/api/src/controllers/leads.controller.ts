@@ -636,9 +636,6 @@ export const getLead = asyncHandler(async (req: Request, res: Response) => {
       currentStage: true,
       assignedTo: { select: { id: true, fullName: true, role: true } },
       createdBy: { select: { id: true, fullName: true, role: true } },
-      tasks: { orderBy: { createdAt: 'desc' } },
-      appointments: { orderBy: { createdAt: 'desc' } },
-      showroomVisits: { orderBy: { createdAt: 'desc' } },
       activities: { orderBy: { createdAt: 'desc' }, include: { user: true } },
     },
   });

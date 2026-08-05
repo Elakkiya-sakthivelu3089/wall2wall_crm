@@ -39,7 +39,6 @@ type PerformanceRow = {
   upToDay: { '5': number, '6': number, '7': number, '8': number, '9': number, total: number };
   thisWeek: { '5': number, '6': number, '7': number, '8': number, '9': number, total: number };
   prp: number;
-  srv: number;
   msmt: number;
   orders: number;
 };
@@ -121,8 +120,8 @@ const Report: React.FC = () => {
     const wb = XLSX.utils.book_new();
 
     const headers = [
-      ["FR/CRE", "CALLS", "UPTODAY", "", "", "", "", "", "THIS WEEK", "", "", "", "", "", "PRP", "SRV", "MSMT", "ORDERS"],
-      ["", "", "5", "6", "7", "8", "9", "TOTAL", "5", "6", "7", "8", "9", "TOTAL", "", "", "", ""]
+      ["FR/CRE", "CALLS", "UPTODAY", "", "", "", "", "", "THIS WEEK", "", "", "", "", "", "PRP", "MSMT", "ORDERS"],
+      ["", "", "5", "6", "7", "8", "9", "TOTAL", "5", "6", "7", "8", "9", "TOTAL", "", "", ""]
     ];
 
     const rows = performanceData.map(item => [
@@ -131,7 +130,6 @@ const Report: React.FC = () => {
       item.upToDay['5'], item.upToDay['6'], item.upToDay['7'], item.upToDay['8'], item.upToDay['9'], item.upToDay.total,
       item.thisWeek['5'], item.thisWeek['6'], item.thisWeek['7'], item.thisWeek['8'], item.thisWeek['9'], item.thisWeek.total,
       item.prp,
-      item.srv,
       item.msmt,
       item.orders
     ]);
@@ -146,8 +144,7 @@ const Report: React.FC = () => {
       { s: { r: 0, c: 8 }, e: { r: 0, c: 13 } },
       { s: { r: 0, c: 14 }, e: { r: 1, c: 14 } },
       { s: { r: 0, c: 15 }, e: { r: 1, c: 15 } },
-      { s: { r: 0, c: 16 }, e: { r: 1, c: 16 } },
-      { s: { r: 0, c: 17 }, e: { r: 1, c: 17 } }
+      { s: { r: 0, c: 16 }, e: { r: 1, c: 16 } }
     ];
 
     const max_len = rows.reduce((w, r) => Math.max(w, String(r[0]).length), 10);
@@ -155,7 +152,7 @@ const Report: React.FC = () => {
       { wch: max_len + 4 },
       { wch: 8 },
       ...Array(12).fill({ wch: 6 }),
-      { wch: 8 }, { wch: 8 }, { wch: 8 }, { wch: 10 }
+      { wch: 8 }, { wch: 8 }, { wch: 10 }
     ];
 
     XLSX.utils.book_append_sheet(wb, ws, "User Performance");
@@ -326,7 +323,6 @@ const Report: React.FC = () => {
                     <th className="px-4 py-2 border-r border-gray-200/60 font-black text-center bg-blue-50/30" colSpan={6}>UPTODAY</th>
                     <th className="px-4 py-2 border-r border-gray-200/60 font-black text-center bg-purple-50/20" colSpan={6}>THIS WEEK</th>
                     <th className="px-3 py-3 border-r border-gray-200/60 font-black text-center" rowSpan={2}>PRP</th>
-                    <th className="px-3 py-3 border-r border-gray-200/60 font-black text-center" rowSpan={2}>SRV</th>
                     <th className="px-3 py-3 border-r border-gray-200/60 font-black text-center" rowSpan={2}>MSMT</th>
                     <th className="px-4 py-3 font-black text-center" rowSpan={2}>ORDERS</th>
                   </tr>
@@ -371,14 +367,13 @@ const Report: React.FC = () => {
                       <td className="px-2 py-3 border-r border-gray-100 text-center font-black text-purple-700 bg-purple-50/10">{row.thisWeek.total || '0'}</td>
 
                       <td className="px-3 py-3 border-r border-gray-100 text-center font-bold text-gray-600">{row.prp || ''}</td>
-                      <td className="px-3 py-3 border-r border-gray-100 text-center font-bold text-gray-600">{row.srv || ''}</td>
                       <td className="px-3 py-3 border-r border-gray-100 text-center font-bold text-gray-600">{row.msmt || ''}</td>
                       <td className="px-4 py-3 text-center font-black text-emerald-600 bg-emerald-50/10">{row.orders || ''}</td>
                     </tr>
                   ))}
                   {performanceData.length === 0 && (
                     <tr>
-                      <td colSpan={18} className="py-20 text-center text-gray-400 uppercase font-black tracking-widest text-xs">
+                      <td colSpan={17} className="py-20 text-center text-gray-400 uppercase font-black tracking-widest text-xs">
                         No Performance Data Recorded
                       </td>
                     </tr>
@@ -673,9 +668,6 @@ const Report: React.FC = () => {
                 <div className="space-y-2">
                   <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-600 transition-all border border-transparent hover:border-gray-100">
                     Lead Hub <ArrowRight size={14} className="text-gray-300" />
-                  </button>
-                  <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-600 transition-all border border-transparent hover:border-gray-100">
-                    Appointments <ArrowRight size={14} className="text-gray-300" />
                   </button>
                 </div>
               </div>

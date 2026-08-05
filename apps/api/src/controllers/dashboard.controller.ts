@@ -9,29 +9,28 @@ export const getDashboardStats = asyncHandler(async (req: Request, res: Response
   const leadScope: any = {};
   await applyLeadVisibility(leadScope, currentUser);
   const scopedLeadWhere = (extra: any = {}) => ({
-    ...extra,
-    ...leadScope,
     AND: [
-      ...(extra.AND || []),
-      ...(leadScope.AND || []),
+      extra,
+      leadScope,
     ],
   });
 
   const [
+    totalLeads,
     freshLeads,
     yetToFollowUp,
     followups,
     opportunities,
     orderBooked,
-    showroomVisits,
-    appointments,
     disqualified,
-    internalTasks,
     creLeads,
     designCompleted,
     fealeads,
     designlead,
+    remindersDue,
   ] = await Promise.all([
+    prisma.lead.count({ where: leadScope }),
+
     // Count leads by status/type
     prisma.lead.count({
       where: scopedLeadWhere({
@@ -46,15 +45,8 @@ export const getDashboardStats = asyncHandler(async (req: Request, res: Response
     prisma.lead.count({ where: scopedLeadWhere({ status: { name: 'Opportunities' } }) }),
     prisma.lead.count({ where: scopedLeadWhere({ status: { name: 'Order Booked' } }) }),
     
-    // Other modules
-    prisma.showroomVisit.count({ where: { lead: leadScope } }),
-    prisma.appointment.count({ where: { lead: leadScope } }),
-    
     // Disqualified
     prisma.lead.count({ where: scopedLeadWhere({ status: { name: 'Disqualified' } }) }),
-    
-    // Tasks
-    prisma.task.count({ where: { status: 'TODO', lead: leadScope } }),
     
     // CRE Leads (Assigned but not fresh)
     prisma.lead.count({ where: scopedLeadWhere({ NOT: { assignedToId: null } }) }),
@@ -67,21 +59,22 @@ export const getDashboardStats = asyncHandler(async (req: Request, res: Response
 
     // Design Allocation
     prisma.lead.count({ where: scopedLeadWhere({ status: { name: { contains: 'Design', mode: 'insensitive' } } }) }),
+
+    prisma.lead.count({ where: scopedLeadWhere({ contactableDate: { lte: new Date(new Date().setHours(23, 59, 59, 999)) } }) }),
   ]);
 
   apiResponse.success(res, {
+    totalLeads,
     freshlead: freshLeads,
     yettofollow: yetToFollowUp,
     followup: followups,
     opportunities: opportunities,
     orderbook: orderBooked,
-    showRoomVisit: showroomVisits,
-    appointment: appointments,
     disqualified: disqualified,
-    internal: internalTasks,
     creleads: creLeads,
     designCompleted: designCompleted,
     fealeads: fealeads || 0,
     designlead: designlead || 0,
+    remindersDue,
   });
 });

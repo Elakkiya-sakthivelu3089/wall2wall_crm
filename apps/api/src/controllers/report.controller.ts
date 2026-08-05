@@ -70,15 +70,6 @@ export const getUserPerformance = asyncHandler(async (req: Request, res: Respons
       }
     });
 
-    // 4. SRV (Showroom Visits)
-    // Could be based on showroomVisits assigned to the lead the user owns, or visits created by user.
-    // Since showroomVisit doesn't have userId directly, we check visits for leads assigned to the user.
-    const srv = await prisma.showroomVisit.count({
-      where: {
-        lead: scopedLeadWhere({ assignedToId: user.id })
-      }
-    });
-
     // 5. ORDERS (Order Booked)
     const orders = await prisma.lead.count({
       where: scopedLeadWhere({
@@ -118,7 +109,6 @@ export const getUserPerformance = asyncHandler(async (req: Request, res: Respons
       upToDay,
       thisWeek,
       prp,
-      srv,
       msmt,
       orders
     };

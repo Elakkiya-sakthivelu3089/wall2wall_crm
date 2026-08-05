@@ -5,10 +5,6 @@ import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
 import LeadHub from './pages/LeadHub';
 import Customers from './pages/Customers';
-import Tasks from './pages/Tasks';
-import ClosedTasks from './pages/ClosedTasks';
-import Appointments from './pages/Appointments';
-import Visits from './pages/Visits';
 import Users from './pages/Users';
 import Profile from './pages/Profile';
 import SignaturePhoto from './pages/SignaturePhoto';
@@ -80,10 +76,6 @@ const App: React.FC = () => {
           <Route path="/leads" element={<ProtectedRoute><Leads /></ProtectedRoute>} />
           <Route path="/leadhub" element={<ManagerRoute><LeadHub /></ManagerRoute>} />
           <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
-          <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-          <Route path="/closed-tasks" element={<ProtectedRoute><ClosedTasks /></ProtectedRoute>} />
-          <Route path="/visits" element={<ProtectedRoute><Visits /></ProtectedRoute>} />
-          <Route path="/appointment" element={<ProtectedRoute><Appointments /></ProtectedRoute>} />
           <Route path="/users" element={<AdminRoute><Users /></AdminRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/signature-photos" element={<AdminRoute><SignaturePhoto /></AdminRoute>} />

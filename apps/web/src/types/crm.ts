@@ -93,18 +93,17 @@ export interface MasterData {
 }
 
 export interface DashboardStats {
+  totalLeads?: number;
   freshlead: number;
   yettofollow: number;
   followup: number;
   opportunities: number;
   orderbook: number;
-  showRoomVisit: number;
-  appointment: number;
   disqualified: number;
-  internal: number;
   creleads: number;
   fealeads: number;
   designlead: number;
   designCompleted?: number;
+  remindersDue?: number;
 }
 

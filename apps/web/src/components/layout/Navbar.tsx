@@ -4,11 +4,8 @@ import {
   Home, 
   Users, 
   User, 
-  CheckSquare, 
-  Calendar, 
   Bell, 
   Flag, 
-  Box, 
   Settings,
   ChevronDown,
   Menu,
@@ -97,21 +94,9 @@ const Navbar: React.FC = () => {
         { title: 'Email Templates', path: '/master/email-template' },
       ]
     }] : []),
-    { title: 'Lead Hub', path: '/leadhub', icon: <Users size={18} />, badge: stats?.freshlead || undefined },
-    { title: 'Leads', path: '/leads', icon: <User size={18} />, badge: stats ? (stats.freshlead + stats.creleads + stats.yettofollow + stats.followup + stats.opportunities + stats.orderbook) : undefined },
-    { 
-      title: 'Task', 
-      path: '#', 
-      icon: <CheckSquare size={18} />, 
-      badge: stats?.internal || undefined,
-      submenu: [
-        { title: 'Active Tasks', path: '/tasks' },
-        { title: 'Closed Archive', path: '/closed-tasks' },
-      ]
-    },
-    { title: 'Showroom Visit', path: '/visits', icon: <Box size={18} />, badge: stats?.showRoomVisit || undefined },
-    { title: 'Appointment', path: '/appointment', icon: <Calendar size={18} />, badge: stats?.appointment || undefined },
-    { title: 'Reminders', path: '/reminders', icon: <Bell size={18} />, badge: 0 },
+    { title: 'Lead Hub', path: '/leadhub', icon: <Users size={18} />, badge: stats?.totalLeads || undefined },
+    { title: 'Leads', path: '/leads', icon: <User size={18} />, badge: stats?.totalLeads || undefined },
+    { title: 'Reminders', path: '/reminders', icon: <Bell size={18} />, badge: stats?.remindersDue || undefined },
     { title: 'Report', path: '/report', icon: <Flag size={18} /> },
   ];
 
@@ -131,10 +116,12 @@ const Navbar: React.FC = () => {
 
           {/* Topbar Right */}
           <div className="flex items-center gap-6">
-            <div className="relative cursor-pointer">
+            <Link to="/reminders" className="relative cursor-pointer">
               <Bell size={22} className="text-gray-400" />
-              <span className="absolute -top-1 -right-1 bg-danger text-white text-[10px] font-bold px-1.5 rounded-full border-2 border-white">0</span>
-            </div>
+              <span className="absolute -top-1 -right-1 bg-danger text-white text-[10px] font-bold px-1.5 rounded-full border-2 border-white">
+                {stats?.remindersDue || 0}
+              </span>
+            </Link>
 
             <div className="flex items-center gap-3 pl-6 border-l border-gray-100 group relative cursor-pointer py-2">
               <img 

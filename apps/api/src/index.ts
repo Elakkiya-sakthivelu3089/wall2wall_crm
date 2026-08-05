@@ -10,8 +10,6 @@ import rateLimit from 'express-rate-limit';
 // Import Routes
 import leadRoutes from './routes/leads.js';
 import userRoutes from './routes/users.js';
-import visitRoutes from './routes/visits.js';
-import taskRoutes from './routes/tasks.js';
 import masterRoutes from './routes/masters.js';
 import photoRoutes from './routes/photos.js';
 import authRoutes from './routes/auth.js';
@@ -77,8 +75,6 @@ app.post('/api/v1/leads/whatsapp', createWhatsAppLead); // Public WhatsApp intak
 // Protected API Routes
 app.use('/api/v1/leads', authenticate, leadRoutes);
 app.use('/api/v1/users', authenticate, userRoutes);
-app.use('/api/v1/visits', authenticate, visitRoutes);
-app.use('/api/v1/tasks', authenticate, taskRoutes);
 app.use('/api/v1/masters', authenticate, masterRoutes);
 app.use('/api/v1/photos', authenticate, photoRoutes);
 app.use('/api/v1/report', authenticate, reportRoutes);

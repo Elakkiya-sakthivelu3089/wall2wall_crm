@@ -3,14 +3,11 @@ import { Link } from 'react-router-dom';
 import { 
   Plus, 
   Bell, 
-  List, 
   Users, 
   UserPlus, 
-  Calendar, 
   ShoppingCart, 
   LayoutGrid,
   TrendingUp,
-  Landmark,
   XCircle
 } from 'lucide-react';
 import { 
@@ -26,31 +23,23 @@ import {
 import { leadService } from '../services/api';
 import type { DashboardStats } from '../types/crm';
 import LeadModal from '../components/modals/LeadModal';
-import TaskModal from '../components/modals/TaskModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const [statsData, tasksData] = await Promise.all([
-        leadService.getStats(),
-        leadService.getTasks({ page: 1, limit: 5 })
-      ]);
+      const statsData = await leadService.getStats();
       setStats(statsData);
-      setTasks(tasksData.data);
     } catch (error: any) {
       console.error('Error fetching dashboard data:', error);
       setStats(null);
-      setTasks([]);
       setErrorMsg(error?.response?.data?.message || 'Unable to load dashboard data right now.');
     } finally {
       setIsLoading(false);
@@ -92,13 +81,11 @@ const Dashboard: React.FC = () => {
     { label: 'Follow-ups', value: stats.followup, icon: <Users />, path: '/leads' },
     { label: 'Opportunities', value: stats.opportunities, icon: <TrendingUp />, path: '/leads' },
     { label: 'Order Booked', value: stats.orderbook, icon: <ShoppingCart />, path: '/leads' },
-    { label: 'Showroom Visit', value: stats.showRoomVisit, icon: <Landmark />, path: '/visits' },
-    { label: 'Appointment Fix', value: stats.appointment, icon: <Calendar />, path: '/appointment' },
     { label: 'Disqualified', value: stats.disqualified, icon: <XCircle />, path: '/leads' },
   ];
 
   const chartData = [
-    { name: 'Total Leads', value: stats.freshlead + stats.yettofollow + stats.followup + stats.opportunities + stats.orderbook + stats.disqualified + stats.creleads + stats.fealeads + stats.designlead },
+    { name: 'Total Leads', value: stats.totalLeads || 0 },
     { name: 'Followup Leads', value: stats.followup },
     { name: 'Opportunity Leads', value: stats.opportunities },
   ];
@@ -139,75 +126,23 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Reminders */}
         <div className="card-box min-h-[250px] md:h-[500px] flex flex-col">
           <h4 className="header-title text-base font-bold text-gray-700 mb-4 flex items-center justify-between">
-            Reminders <div className="flex items-center"><Bell size={18} className="text-gray-400" /><span className="bg-danger text-white text-[10px] font-bold px-1.5 rounded-full ml-1">0</span></div>
+            Reminders <div className="flex items-center"><Bell size={18} className="text-gray-400" /><span className="bg-danger text-white text-[10px] font-bold px-1.5 rounded-full ml-1">{stats.remindersDue || 0}</span></div>
           </h4>
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 italic text-sm">
-            No reminders scheduled
-          </div>
-        </div>
-
-        {/* Internal Task */}
-        <div className="card-box h-[500px] flex flex-col">
-          <h4 className="header-title text-base font-bold text-gray-700 mb-4 flex items-center justify-between">
-            Internal Task <div className="flex items-center"><Bell size={18} className="text-gray-400" /><span className="bg-danger text-white text-[10px] font-bold px-1.5 rounded-full ml-1">{tasks.length}</span></div>
-            <button 
-              onClick={() => setIsTaskModalOpen(true)}
-              className="bg-secondary text-white px-3 py-1 rounded text-[10px] font-bold flex items-center gap-1 uppercase hover:opacity-90 transition-colors"
-            >
-              <Plus size={12} /> Create
-            </button>
-          </h4>
-          <div className="flex-1 overflow-y-auto space-y-4">
-             {tasks.length > 0 ? (
-               tasks.map((task) => (
-                <div key={task.id} className="p-3 border-b border-gray-50 last:border-0">
-                  <div className={`text-white text-[9px] font-bold px-2 py-0.5 rounded-full w-fit mb-1 ${
-                    task.priority === 'HIGH' || task.priority === 'URGENT' ? 'bg-danger' : 
-                    task.priority === 'MEDIUM' ? 'bg-warning' : 'bg-brand'
-                  }`}>
-                    {task.priority}
-                  </div>
-                  <p className="text-[10px] text-gray-400 mb-1">
-                    {task.dueDate ? new Date(task.dueDate).toLocaleString('en-US', { 
-                      month: 'long', 
-                      day: 'numeric', 
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    }) : 'No due date'}
-                  </p>
-                  <h6 className="text-sm font-bold text-gray-700 mb-1">{task.title}</h6>
-                  <div className="flex justify-between text-[10px] text-gray-400 italic">
-                    <span>{task.assignedTo?.fullName || 'Unassigned'}</span>
-                    <span>{new Date(task.createdAt).toLocaleString('en-US', { 
-                      month: 'long', 
-                      day: 'numeric', 
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}</span>
-                  </div>
-                </div>
-               ))
-             ) : (
-               <div className="flex-1 flex items-center justify-center text-gray-400 italic text-sm">
-                 No internal tasks
-               </div>
-             )}
+            {stats.remindersDue ? 'Reminders due today' : 'No reminders scheduled'}
           </div>
         </div>
 
         {/* Counts Column */}
         <div className="space-y-6">
            {[
-             { label: 'Internal Task', value: stats.internal, icon: List },
              { label: 'Assign Leads for CRE', value: stats.creleads, icon: UserPlus },
              { label: 'Assign Leads for Feasibility', value: stats.fealeads, icon: TrendingUp },
-             { label: 'Assign Leads for Designer', value: stats.designlead, icon: Landmark },
+             { label: 'Assign Leads for Designer', value: stats.designlead, icon: UserPlus },
            ].map((item, i) => (
              <div key={i} className="tilebox-one mb-0 py-4 h-[110px]">
                 <div className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-200">
@@ -221,7 +156,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="card-box">
           <h4 className="header-title text-base font-bold text-gray-700 mb-6">Lead Activity Chart</h4>
           <div className="h-[350px] relative w-full">
@@ -240,37 +175,6 @@ const Dashboard: React.FC = () => {
             </ResponsiveContainer>
           </div>
         </div>
-
-        <div className="card-box">
-          <h4 className="header-title text-base font-bold text-gray-700 mb-6">Task Activity Chart</h4>
-          <div className="flex flex-col sm:flex-row gap-6 items-center">
-             <div className="h-[250px] w-full sm:w-1/2 flex items-center justify-center">
-                <div className="w-40 h-40 rounded-full border-[15px] border-[#8101c8] border-l-[#8ed244] border-t-[#ee1cca] border-r-[#fbf35a] relative">
-                   <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xs font-bold text-gray-400 uppercase">Tasks</span>
-                   </div>
-                </div>
-             </div>
-             <div>
-                <table className="w-full text-sm border-collapse">
-                   <thead>
-                      <tr className="bg-gray-50 border border-gray-100">
-                         <th className="p-2 text-left text-xs font-bold text-gray-500 uppercase">Task</th>
-                         <th className="p-2 text-center text-xs font-bold text-gray-500 uppercase">Count</th>
-                      </tr>
-                   </thead>
-                   <tbody>
-                      {['Todo', 'Inprogress', 'Completed', 'Close'].map((task, i) => (
-                        <tr key={i} className="border border-gray-100">
-                           <td className="p-2 text-gray-600 font-medium">{task}</td>
-                           <td className="p-2 text-center font-bold text-gray-700">{[stats.internal, 0, 0, 0][i]}</td>
-                        </tr>
-                      ))}
-                   </tbody>
-                 </table>
-              </div>
-           </div>
-         </div>
        </div>
  
        <LeadModal 
@@ -279,14 +183,6 @@ const Dashboard: React.FC = () => {
          onSuccess={() => {
              fetchData();
              setIsModalOpen(false);
-         }}
-       />
-       <TaskModal 
-         isOpen={isTaskModalOpen}
-         onClose={() => setIsTaskModalOpen(false)}
-         onSuccess={() => {
-             fetchData();
-             setIsTaskModalOpen(false);
          }}
        />
      </div>
