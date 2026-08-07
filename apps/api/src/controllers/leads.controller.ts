@@ -275,7 +275,8 @@ export const createLead = asyncHandler(async (req: Request, res: Response) => {
   const allowedFields = [
     'name', 'email', 'phone', 'projectId', 'sourceId', 'statusId', 
     'brandId', 'rating', 'nextFollowUp', 'comments',
-    'instructionToPass', 'dataCollected', 'contactableDate', 'leadType'
+    'instructionToPass', 'dataCollected', 'contactableDate', 'leadType',
+    'ratingName', 'metaLeadId', 'metaFormId', 'metaAdId', 'metaCampaignId', 'metaAdAccountId'
   ];
   
   const data: any = {};
@@ -450,7 +451,8 @@ export const updateLead = asyncHandler(async (req: Request, res: Response) => {
   const allowedFields = [
     'name', 'email', 'phone', 'projectId', 'sourceId', 'statusId', 
     'brandId', 'rating', 'nextFollowUp', 'comments', 'assignedToId',
-    'instructionToPass', 'dataCollected', 'contactableDate', 'leadType'
+    'instructionToPass', 'dataCollected', 'contactableDate', 'leadType',
+    'ratingName', 'metaLeadId', 'metaFormId', 'metaAdId', 'metaCampaignId', 'metaAdAccountId'
   ];
 
   const data: any = {};

@@ -34,7 +34,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
       username: true,
       fullName: true,
       email: true,
-      // @ts-ignore
       password: true,
       phone: true,
       role: true,
@@ -52,7 +51,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Temporary fallback for the admin user to allow "admin123" if the DB isn't seeded with a hashed password yet.
-  if ((user.email === 'admin@cookscape.com' || user.username === 'admin') && password === 'admin123') {
+  if ((user.email === 'admin@gmail.com' || user.username === 'admin@gmail.com') && password === 'admin123') {
     // Admin override accepted
   } else {
     if (!(user as any).password) {
@@ -70,8 +69,10 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     JWT_SECRET as string,
     { expiresIn: JWT_EXPIRES_IN }
   );
+  
+  const { password: _, ...userWithoutPassword } = user;
 
-  return apiResponse.success(res, { token, user }, 'Login successful');
+  return apiResponse.success(res, { token, user: userWithoutPassword }, 'Login successful');
 });
 
 export const googleLogin = asyncHandler(async (req: Request, res: Response) => {

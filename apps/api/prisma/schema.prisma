@@ -67,6 +67,12 @@ model Lead {
   showroomVisits    ShowroomVisit[]
   tasks             Task[]
   tags              LeadTag[]       @relation("LeadToLeadTag")
+  ratingName      String?
+  metaLeadId      String?
+  metaFormId      String?
+  metaAdId        String?
+  metaCampaignId  String?
+  metaAdAccountId String?
 }
 
 model Task {

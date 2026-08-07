@@ -13,6 +13,7 @@ import userRoutes from './routes/users.js';
 import masterRoutes from './routes/masters.js';
 import photoRoutes from './routes/photos.js';
 import authRoutes from './routes/auth.js';
+import metaRoutes from './routes/meta.js';
 import reportRoutes from './routes/report.js';
 import { getDashboardStats } from './controllers/dashboard.controller.js';
 import { authenticate } from './middleware/auth.middleware.js';
@@ -65,11 +66,17 @@ app.use(cors({
   },
   credentials: true
 }));
+
+app.get("/", (req, res) => {
+  console.log("Root endpoint hit");
+});
+
 app.use(express.json());
 app.use(express.static(path.join(process.cwd(), 'public')));
 
 // API Routes
 app.use('/api/v1/auth', authRoutes); // Unprotected
+app.use('/api/v1/meta', metaRoutes); // Public Meta conversion events
 app.post('/api/v1/leads/whatsapp', createWhatsAppLead); // Public WhatsApp intake
 
 // Protected API Routes
@@ -78,6 +85,8 @@ app.use('/api/v1/users', authenticate, userRoutes);
 app.use('/api/v1/masters', authenticate, masterRoutes);
 app.use('/api/v1/photos', authenticate, photoRoutes);
 app.use('/api/v1/report', authenticate, reportRoutes);
+
+app.use("/api/meta", metaRoutes);
 
 // Dashboard
 app.get('/api/v1/dashboard/stats', authenticate, getDashboardStats);

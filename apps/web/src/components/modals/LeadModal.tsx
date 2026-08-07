@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { leadService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext'; // Import useAuth
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -9,7 +10,22 @@ interface LeadModalProps {
   lead?: any;
 }
 
+const ratingOptions = [
+  { value: 1, label: '1 - Disqualified', ratingName: 'DISQUALIFIED' },
+  { value: 2, label: '2 - Low Quality', ratingName: 'LOW_QUALITY' },
+  { value: 3, label: '3 - Moderate', ratingName: 'MODERATE' },
+  { value: 4, label: '4 - Qualified', ratingName: 'QUALIFIED' },
+  { value: 5, label: '5 - Order Booked', ratingName: 'ORDER_BOOKED' },
+];
+
+const getRatingName = (rating: number) => {
+  return ratingOptions.find((option) => option.value === rating)?.ratingName || '';
+};
+
 const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead }) => {
+  const { user } = useAuth(); // Use the useAuth hook
+  const userRole = user?.role; // Get userRole from the context
+console.log('User Role:', userRole); // Debugging line to check the user role
   const [formData, setFormData] = useState<any>({
     name: '',
     email: '',
@@ -19,6 +35,12 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
     statusId: '',
     brandId: '',
     rating: 0,
+    ratingName: '',
+    metaLeadId: '',
+    metaFormId: '',
+    metaAdId: '',
+    metaCampaignId: '',
+    metaAdAccountId: '',
     nextFollowUp: '',
     tagIds: [],
     comments: '',
@@ -28,6 +50,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
   });
   const [masters, setMasters] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   useEffect(() => {
     const fetchMasters = async () => {
@@ -45,8 +68,17 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
     return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
   };
 
+  const handleRatingChange = (rating: number) => {
+    setFormData({
+      ...formData,
+      rating,
+      ratingName: getRatingName(rating),
+    });
+  };
+
   useEffect(() => {
     if (lead) {
+      const rating = lead.rating || 0;
       setFormData({
         name: lead.name || '',
         email: lead.email || '',
@@ -55,7 +87,13 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
         sourceId: lead.sourceId || '',
         statusId: lead.statusId || '',
         brandId: lead.brandId || '',
-        rating: lead.rating || 0,
+        rating,
+        ratingName: lead.ratingName || getRatingName(rating),
+        metaLeadId: lead.metaLeadId || '',
+        metaFormId: lead.metaFormId || '',
+        metaAdId: lead.metaAdId || '',
+        metaCampaignId: lead.metaCampaignId || '',
+        metaAdAccountId: lead.metaAdAccountId || '',
         nextFollowUp: lead.nextFollowUp ? new Date(lead.nextFollowUp).toISOString().split('T')[0] : '',
         tagIds: lead.tags?.map((t: any) => t.id) || [],
         comments: lead.comments || '',
@@ -73,6 +111,12 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
             statusId: '',
             brandId: '',
             rating: 0,
+            ratingName: '',
+            metaLeadId: '',
+            metaFormId: '',
+            metaAdId: '',
+            metaCampaignId: '',
+            metaAdAccountId: '',
             nextFollowUp: '',
             tagIds: [],
             comments: '',
@@ -89,11 +133,13 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
     try {
       const payload = {
         ...formData,
+        ratingName: formData.ratingName || getRatingName(formData.rating),
         contactableDate: formData.contactableDate ? new Date(formData.contactableDate).toISOString() : null,
       };
       if (lead?.id) {
         await (leadService as any).updateLead(lead.id, payload);
       } else {
+        // console.log(payload)
         await leadService.createLead(payload);
       }
       onSuccess();
@@ -116,7 +162,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="bg-[#3b3e47] p-4 flex items-center justify-between text-white">
+        <div className="!text-white bg-[#3b3e47] p-4 flex items-center justify-between ">
           <h4 className="text-sm font-bold uppercase m-0">{lead ? 'Edit Lead' : 'Create New Lead'}</h4>
           <button onClick={onClose} className="text-white opacity-50 hover:opacity-100">
             <X size={20} />
@@ -163,10 +209,11 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
               <select 
                 className="form-control !py-1.5 !text-[12px]"
                 value={formData.rating}
-                onChange={(e) => setFormData({...formData, rating: Number(e.target.value)})}
+                onChange={(e) => handleRatingChange(Number(e.target.value))}
               >
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(r => (
-                  <option key={r} value={r}>{r} Stars</option>
+                <option value={0}>Select Rating</option>
+                {ratingOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </div>
@@ -242,6 +289,72 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
             </div>
           </div>
 
+          {userRole === "DM_EXECUTIVE" && (
+
+                    <div className="space-y-3 border-t border-gray-100 pt-4">
+                      <div>
+                        <h5 className="text-[11px] font-bold uppercase text-gray-500 m-0">Meta Lead Details</h5>
+                        <p className="text-[10px] text-gray-400 m-0">Meta Lead ID is required to send qualified/order-booked status back to Meta.</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Meta Lead ID</label>
+                          <input
+                            type="text"
+                            className="form-control !py-1.5 !text-[12px]"
+                            value={formData.metaLeadId}
+                            onChange={(e) => setFormData({...formData, metaLeadId: e.target.value})}
+                            placeholder="Unique leadgen_id"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Meta Form ID</label>
+                          <input
+                            type="text"
+                            className="form-control !py-1.5 !text-[12px]"
+                            value={formData.metaFormId}
+                            onChange={(e) => setFormData({...formData, metaFormId: e.target.value})}
+                            placeholder="Instant form ID"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Meta Ad ID</label>
+                          <input
+                            type="text"
+                            className="form-control !py-1.5 !text-[12px]"
+                            value={formData.metaAdId}
+                            onChange={(e) => setFormData({...formData, metaAdId: e.target.value})}
+                            placeholder="Ad ID"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Meta Campaign ID</label>
+                          <input
+                            type="text"
+                            className="form-control !py-1.5 !text-[12px]"
+                            value={formData.metaCampaignId}
+                            onChange={(e) => setFormData({...formData, metaCampaignId: e.target.value})}
+                            placeholder="Campaign ID"
+                          />
+                        </div>
+
+                        <div className="space-y-1 md:col-span-2">
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Meta Ad Account ID</label>
+                          <input
+                            type="text"
+                            className="form-control !py-1.5 !text-[12px]"
+                            value={formData.metaAdAccountId}
+                            onChange={(e) => setFormData({...formData, metaAdAccountId: e.target.value})}
+                            placeholder="Ad account ID"
+                          />
+                        </div>
+                      </div>
+                    </div>
+          )}
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-gray-400 uppercase">Instruction to pass <span className="text-red-500">*</span></label>
             <textarea 
