@@ -1,20 +1,9 @@
 import { useState, type ElementType, type FC } from 'react';
 import { 
-  Mail, 
   Star, 
-  MessageSquare,
   User,
   Activity,
   Edit2,
-  Bell,
-  CheckCircle,
-  FileText,
-  UserPlus,
-  Send,
-  Video,
-  Share2,
-  Lock,
-  Smartphone,
   Trash2
 } from 'lucide-react';
 import type { Lead } from '../../types/crm';
@@ -45,9 +34,17 @@ const ActionButton = ({ icon: Icon, label, color = 'bg-brand', onClick }: Action
   </button>
 );
 
+const getLeadStatusName = (lead: Lead | null) => {
+  if (!lead?.status) return 'Fresh';
+  return typeof lead.status === 'object' ? lead.status.name : lead.status;
+};
+
 const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
   const { user: currentUser } = useAuth();
   const isDmEmployee = currentUser?.role === 'DM_EXECUTIVE';
+  const statusName = getLeadStatusName(lead);
+  const isFreshLead = statusName.trim().toLowerCase() === 'fresh';
+  const canEditLead = !isDmEmployee || isFreshLead;
   const [modalType, setModalType] = useState<'FOLLOWUP' | 'REMINDER' | 'STATUS' | 'NOTE' | 'SWITCH_USER' | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -112,7 +109,7 @@ const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
            </div>
            <div className="space-y-0.5">
               <label className="text-[9px] font-bold text-gray-400 uppercase">Status</label>
-              <p className="text-[11px] font-bold text-brand uppercase">{typeof lead.status === 'object' ? lead.status?.name : lead.status}</p>
+              <p className="text-[11px] font-bold text-brand uppercase">{statusName}</p>
            </div>
            <div className="space-y-0.5">
               <label className="text-[9px] font-bold text-gray-400 uppercase">Date Collected</label>
@@ -146,42 +143,19 @@ const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
 
       <div className="p-4 md:p-5 space-y-6">
         {/* Actions Grid */}
-        {!isDmEmployee && (
+        {(canEditLead || !isDmEmployee) && (
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2">
-             <ActionButton icon={Edit2} label="Edit" color="bg-brand" onClick={() => setIsEditModalOpen(true)} />
-             <ActionButton icon={Activity} label="Followup" color="bg-secondary" onClick={() => setModalType('FOLLOWUP')} />
-             <ActionButton icon={Bell} label="Reminder" color="bg-brand" onClick={() => setModalType('REMINDER')} />
-             <ActionButton icon={FileText} label="Requirement" color="bg-brand" onClick={() => setModalType('NOTE')} />
-             <ActionButton icon={Lock} label="Online Req." color="bg-brand" onClick={() => setModalType('NOTE')} />
-             <ActionButton icon={Smartphone} label="Contact" color="bg-brand" onClick={() => setModalType('NOTE')} />
-             <ActionButton icon={Mail} label="Email" color="bg-brand" onClick={() => setModalType('NOTE')} />
-             <ActionButton icon={MessageSquare} label="SMS" color="bg-brand" onClick={() => setModalType('NOTE')} />
-             {currentUser?.role === 'ADMIN' && <ActionButton icon={UserPlus} label="Switch" color="bg-brand" onClick={() => setModalType('SWITCH_USER')} />}
-             <ActionButton icon={CheckCircle} label="KYC Form" color="bg-brand" onClick={() => setModalType('STATUS')} />
+             {canEditLead && (
+               <ActionButton icon={Edit2} label="Edit" color="bg-brand" onClick={() => setIsEditModalOpen(true)} />
+             )}
+             {!isDmEmployee && (
+               <ActionButton icon={Activity} label="Followup" color="bg-secondary" onClick={() => setModalType('FOLLOWUP')} />
+             )}
+
              {(currentUser?.role === 'ADMIN' || currentUser?.role === 'BUSINESS_HEAD') && (
                 <ActionButton icon={Trash2} label="Delete" color="bg-danger" onClick={handleDelete} />
               )}
           </div>
-        )}
-
-        {!isDmEmployee && (
-          <>
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-50">
-               <button className="bg-secondary text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase flex items-center gap-2 hover:opacity-90 transition-all">
-                  <Send size={12} /> Send Projects
-               </button>
-               <button className="bg-secondary text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase flex items-center gap-2 hover:opacity-90 transition-all">
-                  <Share2 size={12} /> Custom Msg
-               </button>
-               <button className="bg-secondary text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase flex items-center gap-2 hover:opacity-90 transition-all">
-                  <Video size={12} /> Send Videos
-               </button>
-            </div>
-
-            <p className="text-[9px] text-gray-400 text-center italic mt-2 uppercase">
-               WhatsApp redirection notice: Wait few seconds before clicking send.
-            </p>
-          </>
         )}
 
         <div className="pt-4 border-t border-gray-50">
@@ -202,7 +176,7 @@ const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
         />
       )}
 
-      {!isDmEmployee && (
+      {canEditLead && (
         <LeadModal 
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}

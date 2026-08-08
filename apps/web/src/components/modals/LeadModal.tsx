@@ -294,7 +294,10 @@ console.log('User Role:', userRole); // Debugging line to check the user role
                     <div className="space-y-3 border-t border-gray-100 pt-4">
                       <div>
                         <h5 className="text-[11px] font-bold uppercase text-gray-500 m-0">Meta Lead Details</h5>
-                        <p className="text-[10px] text-gray-400 m-0">Meta Lead ID is required to send qualified/order-booked status back to Meta.</p>
+                        <p className="text-[10px] text-gray-400 m-0">
+                          Enter the IDs from the Facebook Lead Ad. The <strong>Meta Lead ID</strong> is required to send offline
+                          conversion events (like 'Qualified' or 'Order Booked') back to Meta for ad optimization.
+                        </p>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

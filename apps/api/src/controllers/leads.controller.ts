@@ -1,5 +1,7 @@
 import prisma from '../lib/prisma.js';
 import type { Request, Response } from 'express';
+import { randomUUID } from 'crypto';
+import { sendMetaLead } from '../services/meta.service.js';
 import { asyncHandler, apiResponse } from '../utils/apiUtils.js';
 import {
   applyLeadVisibility,
@@ -17,6 +19,20 @@ const normalizePhone = (phone: string): string => {
   const cleaned = phone.replace(/\D/g, '');
   // Take last 10 digits (standard Indian mobile format)
   return cleaned.length >= 10 ? cleaned.slice(-10) : cleaned;
+};
+
+const getMetaEventNameForStatus = (statusName?: string | null): string | null => {
+  if (!statusName) return null;
+
+  const normalizedStatus = statusName.trim().toLowerCase();
+
+  if (normalizedStatus === 'disqualified') return 'LeadDisqualified';
+  if (normalizedStatus === 'yet to follow-up') return 'LeadLowQuality';
+  if (normalizedStatus === 'follow-up') return 'LeadModerate';
+  if (normalizedStatus === 'opportunities') return 'Contact';
+  if (normalizedStatus === 'order booked') return 'Purchase';
+
+  return null;
 };
 
 const buildSyntheticLeadAudit = (lead: any) => {
@@ -545,6 +561,37 @@ export const updateLead = asyncHandler(async (req: Request, res: Response) => {
         userId: currentUser.id || null
       }
     });
+
+    // Send Meta Conversion event when follow-up/status changes to a mapped status.
+    if (updated.metaLeadId) {
+      const eventName = getMetaEventNameForStatus(updated.status?.name);
+
+      if (eventName) {
+        try {
+          console.log(`✅ Sending Meta event '${eventName}' for lead ${updated.id} with metaLeadId ${updated.metaLeadId} on status change`);
+          
+          const forwardedFor = req.headers['x-forwarded-for'];
+          const ip = Array.isArray(forwardedFor)
+            ? forwardedFor[0]
+            : forwardedFor?.split(',')[0] || req.socket.remoteAddress;
+
+          await sendMetaLead({
+              eventName,
+              eventId: randomUUID(), // A unique ID for this specific event
+              source: 'crm',
+              email: updated.email || undefined,
+              phone: updated.phone || undefined,
+              pageUrl: 'https://crm.cookscape.com/lead', // Main CRM URL as source
+              ip: ip || '',
+              userAgent: req.headers['user-agent'] || '',
+              metaLeadId: updated.metaLeadId, // Pass the lead_id for matching
+          });
+        } catch (metaError) {
+          console.error(`❌ Failed to send Meta event for lead ${updated.id} on status change:`, metaError);
+          // Non-blocking: Log the error but don't fail the main API request.
+        }
+      }
+    }
   } else if (data.assignedToId !== undefined && data.assignedToId !== existingLead?.assignedToId) {
     await prisma.leadActivity.create({
       data: {

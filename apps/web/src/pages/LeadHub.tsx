@@ -224,7 +224,7 @@ const LeadHub: React.FC = () => {
       render: (row: Lead) => (
         <div className="flex flex-col">
           <span className="bg-brand text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase w-fit">
-            {row.status?.name || 'Fresh'}
+            {typeof row.status === 'object' ? row.status?.name || 'Fresh' : row.status || 'Fresh'}
           </span>
           <span className="text-[9px] text-gray-400 font-bold uppercase mt-1">
             {row.source?.name || 'Manual'}

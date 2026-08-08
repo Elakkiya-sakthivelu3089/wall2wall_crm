@@ -51,7 +51,7 @@ export interface Lead {
   assignedToId?: string | null;
   assignedTo?: UserBasic | null;
   createdBy?: UserBasic | null;
-  status: LeadStatus | null;
+  status: LeadStatus | string | null;
   statusId: string | null;
   source?: Source | null;
   sourceId?: string | null;

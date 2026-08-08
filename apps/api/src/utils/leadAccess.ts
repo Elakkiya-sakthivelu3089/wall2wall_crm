@@ -76,7 +76,28 @@ export const ensureLeadCreateAccess = (user: RequestUser) => {
 
 export const ensureLeadUpdateAccess = async (leadId: string, user: RequestUser) => {
   if (user.role === DM_EXECUTIVE_ROLE) {
-    throw { status: 403, message: 'DM executives can add and view their leads, but cannot edit them.' };
+    const where: any = { id: leadId };
+    await applyLeadVisibility(where, user);
+
+    const visibleLead = await prisma.lead.findFirst({
+      where,
+      select: {
+        id: true,
+        status: { select: { name: true } },
+      },
+    });
+
+    if (!visibleLead) {
+      throw { status: 403, message: 'Access denied to this lead.' };
+    }
+
+    const statusName = visibleLead.status?.name || 'Fresh';
+
+    if (statusName.trim().toLowerCase() !== 'fresh') {
+      throw { status: 403, message: 'DM executives can edit only fresh leads.' };
+    }
+
+    return visibleLead;
   }
 
   await ensureLeadViewAccess(leadId, user);

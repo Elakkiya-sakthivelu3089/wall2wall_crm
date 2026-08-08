@@ -182,7 +182,7 @@ const Leads: React.FC = () => {
             <label className="text-[10px] font-bold text-gray-400 uppercase">Rating</label>
             <select value={rating} onChange={(e) => setRating(e.target.value)} className="form-control !py-1 !px-2 !text-[11px]">
               <option value="">-Select-</option>
-              {[1,2,3,4,5,6,7,8,9,10].map(r => <option key={r} value={r}>{r} Stars</option>)}
+              {[1,2,3,4,5].map(r => <option key={r} value={r}>{r} Stars</option>)}
             </select>
           </div>
           <div className="space-y-1">

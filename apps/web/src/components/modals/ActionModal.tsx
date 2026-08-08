@@ -3,7 +3,6 @@ import {
   X, 
   MessageSquare, 
   CheckCircle, 
-  Bell, 
   Activity,
   Send,
   User
@@ -130,7 +129,6 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onSuccess, l
   const getTitle = () => {
     switch (type) {
       case 'FOLLOWUP': return 'Record Follow-up';
-      case 'REMINDER': return 'Set Reminder';
       case 'STATUS': return 'Change Status';
       case 'SWITCH_USER': return 'Assign Lead';
       default: return 'Add Internal Note';
@@ -140,7 +138,6 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onSuccess, l
   const getIcon = () => {
     switch (type) {
       case 'FOLLOWUP': return <Activity className="w-6 h-6" />;
-      case 'REMINDER': return <Bell className="w-6 h-6" />;
       case 'STATUS': return <CheckCircle className="w-6 h-6" />;
       case 'SWITCH_USER': return <User className="w-6 h-6" />;
       default: return <MessageSquare className="w-6 h-6" />;
