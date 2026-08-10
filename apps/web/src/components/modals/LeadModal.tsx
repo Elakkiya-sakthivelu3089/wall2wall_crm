@@ -78,7 +78,6 @@ console.log('User Role:', userRole); // Debugging line to check the user role
 
   useEffect(() => {
     if (lead) {
-      const rating = lead.rating || 0;
       setFormData({
         name: lead.name || '',
         email: lead.email || '',
@@ -87,8 +86,8 @@ console.log('User Role:', userRole); // Debugging line to check the user role
         sourceId: lead.sourceId || '',
         statusId: lead.statusId || '',
         brandId: lead.brandId || '',
-        rating,
-        ratingName: lead.ratingName || getRatingName(rating),
+        rating: lead.rating || 0,
+        ratingName: lead.ratingName || '',
         metaLeadId: lead.metaLeadId || '',
         metaFormId: lead.metaFormId || '',
         metaAdId: lead.metaAdId || '',
@@ -289,7 +288,7 @@ console.log('User Role:', userRole); // Debugging line to check the user role
             </div>
           </div>
 
-          {(userRole === "ADMIN" || (userRole === "DM_EXECUTIVE" && user?.metaAccess)) && (
+          {userRole === "DM_EXECUTIVE" && (
 
                     <div className="space-y-3 border-t border-gray-100 pt-4">
                       <div>
