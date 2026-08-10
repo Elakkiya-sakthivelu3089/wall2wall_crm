@@ -55,23 +55,23 @@ export const sendMetaLead = async ({
   };
 
   console.log('Meta payload:', JSON.stringify(payload, null, 2));
-  // const apiVersion = process.env.META_GRAPH_API_VERSION || 'v20.0';
-  // const response = await fetch(`https://graph.facebook.com/${apiVersion}/${pixelId}/events`, {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({
-  //     ...payload,
-  //     access_token: accessToken,
-  //   }),
-  // });
+  const apiVersion = process.env.META_GRAPH_API_VERSION || 'v20.0';
+  const response = await fetch(`https://graph.facebook.com/${apiVersion}/${pixelId}/events`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      ...payload,
+      access_token: accessToken,
+    }),
+  });
 
-  // const result = await response.json();
+  const result = await response.json();
 
-  // if (!response.ok) {
-  //   throw new Error(JSON.stringify(result));
-  // }
+  if (!response.ok) {
+    throw new Error(JSON.stringify(result));
+  }
 
-  // return result;
+  return result;
 };

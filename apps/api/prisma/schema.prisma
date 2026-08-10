@@ -16,6 +16,7 @@ model User {
   phone         String?
   role          Role           @default(CRE)
   status        Boolean        @default(true)
+  metaAccess    Boolean        @default(false)
   avatar        String?
   showroomId    String?
   signaturePhotoId String?

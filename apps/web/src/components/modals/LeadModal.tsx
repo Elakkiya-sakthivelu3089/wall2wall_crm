@@ -289,7 +289,7 @@ console.log('User Role:', userRole); // Debugging line to check the user role
             </div>
           </div>
 
-          {userRole === "DM_EXECUTIVE" && (
+          {(userRole === "ADMIN" || (userRole === "DM_EXECUTIVE" && user?.metaAccess)) && (
 
                     <div className="space-y-3 border-t border-gray-100 pt-4">
                       <div>

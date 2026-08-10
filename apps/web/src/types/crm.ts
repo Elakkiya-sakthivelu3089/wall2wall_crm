@@ -28,6 +28,7 @@ export interface User {
   phone?: string | null;
   role: Role;
   status: boolean;
+  metaAccess?: boolean;
   avatar?: string | null;
   showroomId?: string | null;
   showroom?: { id: string; name: string } | null;
