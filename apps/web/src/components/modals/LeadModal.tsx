@@ -47,6 +47,7 @@ console.log('User Role:', userRole); // Debugging line to check the user role
     instructionToPass: '',
     dataCollected: new Date().toISOString().split('T')[0],
     contactableDate: '',
+    assignedToId: '',
   });
   const [masters, setMasters] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,6 +101,7 @@ console.log('User Role:', userRole); // Debugging line to check the user role
         instructionToPass: lead.instructionToPass || '',
         dataCollected: lead.dataCollected ? new Date(lead.dataCollected).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         contactableDate: toLocalISOString(lead.contactableDate),
+        assignedToId: lead.assignedToId || '',
       });
     } else {
         setFormData({
@@ -123,6 +125,7 @@ console.log('User Role:', userRole); // Debugging line to check the user role
             instructionToPass: '',
             dataCollected: new Date().toISOString().split('T')[0],
             contactableDate: '',
+            assignedToId: '',
         });
     }
   }, [lead, isOpen]);
@@ -287,6 +290,22 @@ console.log('User Role:', userRole); // Debugging line to check the user role
                 onChange={(e) => setFormData({...formData, contactableDate: e.target.value})}
               />
             </div>
+
+            {(userRole === 'ADMIN' || userRole === 'BUSINESS_HEAD') && (
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-400 uppercase">Assigned To</label>
+                <select 
+                  className="form-control !py-1.5 !text-[12px]"
+                  value={formData.assignedToId || ''}
+                  onChange={(e) => setFormData({...formData, assignedToId: e.target.value})}
+                >
+                  <option value="">Unassigned</option>
+                  {masters?.users?.map((u: any) => (
+                    <option key={u.id} value={u.id}>{u.fullName} ({u.role})</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {(userRole === "ADMIN" || (userRole === "DM_EXECUTIVE" && user?.metaAccess)) && (

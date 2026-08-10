@@ -290,7 +290,7 @@ export const createLead = asyncHandler(async (req: Request, res: Response) => {
   
   const allowedFields = [
     'name', 'email', 'phone', 'projectId', 'sourceId', 'statusId', 
-    'brandId', 'rating', 'nextFollowUp', 'comments',
+    'brandId', 'rating', 'nextFollowUp', 'comments', 'assignedToId',
     'instructionToPass', 'dataCollected', 'contactableDate', 'leadType',
     'ratingName', 'metaLeadId', 'metaFormId', 'metaAdId', 'metaCampaignId', 'metaAdAccountId'
   ];
