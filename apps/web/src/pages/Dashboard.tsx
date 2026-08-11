@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
           <h4 className="page-title text-xl font-bold text-gray-700 m-0">Dashboard</h4>
         </div>
         <div className="flex gap-2">
-           {(user?.role === 'ADMIN' || user?.role === 'DM_EXECUTIVE') && (
+           {['ADMIN', 'DM_EXECUTIVE', 'BUSINESS_HEAD', 'DESIGNER'].includes(user?.role || '') && (
              <button 
                onClick={() => setIsModalOpen(true)}
                className="btn-custom !rounded-full !px-5 !py-1.5 text-[11px] flex items-center gap-2"
@@ -141,7 +141,6 @@ const Dashboard: React.FC = () => {
         <div className="space-y-6">
            {[
              { label: 'Assign Leads for CRE', value: stats.creleads, icon: UserPlus },
-             { label: 'Assign Leads for Feasibility', value: stats.fealeads, icon: TrendingUp },
              { label: 'Assign Leads for Designer', value: stats.designlead, icon: UserPlus },
            ].map((item, i) => (
              <div key={i} className="tilebox-one mb-0 py-4 h-[110px]">

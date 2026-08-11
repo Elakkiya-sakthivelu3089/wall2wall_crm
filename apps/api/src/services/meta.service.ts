@@ -72,6 +72,6 @@ export const sendMetaLead = async ({
   if (!response.ok) {
     throw new Error(JSON.stringify(result));
   }
-
+  console.log(result)
   return result;
 };

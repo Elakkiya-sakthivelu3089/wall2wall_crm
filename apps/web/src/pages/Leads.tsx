@@ -122,7 +122,7 @@ const Leads: React.FC = () => {
       <div className="card-box !mb-0 !p-3 md:!p-4">
         <div className="flex items-center justify-between mb-4">
            <h4 className="text-sm md:text-base font-bold text-gray-700 uppercase m-0">Leads</h4>
-           {(user?.role === 'ADMIN' || user?.role === 'DM_EXECUTIVE') && (
+           {['ADMIN', 'DM_EXECUTIVE', 'BUSINESS_HEAD', 'DESIGNER'].includes(user?.role || '') && (
              <button 
                onClick={() => setIsModalOpen(true)}
                className="btn-custom !rounded !py-1 text-[10px] md:text-[11px] flex items-center gap-2"

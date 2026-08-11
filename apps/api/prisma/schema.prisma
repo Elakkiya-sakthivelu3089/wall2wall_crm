@@ -264,7 +264,6 @@ model SignaturePhoto {
 enum Role {
   ADMIN
   CRE
-  FEASIBILITY
   DESIGNER
   BUSINESS_HEAD
   DM_EXECUTIVE

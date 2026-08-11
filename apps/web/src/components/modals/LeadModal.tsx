@@ -25,7 +25,6 @@ const getRatingName = (rating: number) => {
 const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead }) => {
   const { user } = useAuth(); // Use the useAuth hook
   const userRole = user?.role; // Get userRole from the context
-console.log('User Role:', userRole); // Debugging line to check the user role
   const [formData, setFormData] = useState<any>({
     name: '',
     email: '',
@@ -291,7 +290,7 @@ console.log('User Role:', userRole); // Debugging line to check the user role
               />
             </div>
 
-            {(userRole === 'ADMIN' || userRole === 'BUSINESS_HEAD') && (
+            {(userRole === 'ADMIN' || userRole === 'BUSINESS_HEAD' || userRole === 'CRE' || userRole === 'DESIGNER') && (
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-gray-400 uppercase">Assigned To</label>
                 <select 
@@ -308,7 +307,7 @@ console.log('User Role:', userRole); // Debugging line to check the user role
             )}
           </div>
 
-          {(userRole === "ADMIN" || (userRole === "DM_EXECUTIVE" && user?.metaAccess)) && (
+          {(userRole === "DM_EXECUTIVE" && user?.metaAccess) && (
 
                     <div className="space-y-3 border-t border-gray-100 pt-4">
                       <div>

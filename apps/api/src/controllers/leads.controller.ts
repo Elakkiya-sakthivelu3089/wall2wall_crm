@@ -298,7 +298,7 @@ export const createLead = asyncHandler(async (req: Request, res: Response) => {
   const data: any = {};
   allowedFields.forEach(field => {
     if (req.body[field] !== undefined) {
-      if (['projectId', 'sourceId', 'statusId', 'brandId'].includes(field) && req.body[field] === '') {
+      if (['projectId', 'sourceId', 'statusId', 'brandId', 'assignedToId'].includes(field) && req.body[field] === '') {
         data[field] = null;
       } else if (['nextFollowUp', 'dataCollected', 'contactableDate'].includes(field)) {
         data[field] = req.body[field] ? new Date(String(req.body[field])) : (field === 'dataCollected' ? new Date() : null);
@@ -581,7 +581,7 @@ export const updateLead = asyncHandler(async (req: Request, res: Response) => {
               source: 'crm',
               email: updated.email || undefined,
               phone: updated.phone || undefined,
-              pageUrl: 'https://crm.cookscape.com/lead', // Main CRM URL as source
+              pageUrl: 'https://crm.wall2wall.com/lead', // Main CRM URL as source
               ip: ip || '',
               userAgent: req.headers['user-agent'] || '',
               metaLeadId: updated.metaLeadId, // Pass the lead_id for matching
