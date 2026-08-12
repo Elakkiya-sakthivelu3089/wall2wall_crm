@@ -70,11 +70,7 @@ export const ensureLeadCreateAccess = (user: RequestUser) => {
   }
 };
 
-export const ensureLeadUpdateAccess = async (leadId: string, user: RequestUser) => {
-  if (user.role === 'CRE') {
-    throw { status: 403, message: 'CRE users cannot edit leads.' };
-  }
-
+export const ensureLeadUpdateAccess = async (leadId: string, user: RequestUser, updatePayload?: any) => {
   const lead = await prisma.lead.findUnique({
     where: { id: leadId },
     select: {
@@ -93,29 +89,43 @@ export const ensureLeadUpdateAccess = async (leadId: string, user: RequestUser) 
     return lead;
   }
 
-  // DM, BH, Designer can edit only if assigned to them or created by them
-  if (user.role === DM_EXECUTIVE_ROLE || user.role === 'BUSINESS_HEAD' || user.role === 'DESIGNER') {
+  if (user.role === 'BUSINESS_HEAD') {
     const isVisible = lead.assignedToId === user.id || lead.createdById === user.id;
     if (!isVisible) {
       throw { status: 403, message: 'Access denied: You can only edit leads assigned to you or added by you.' };
     }
-
-    if (user.role === DM_EXECUTIVE_ROLE) {
-      const statusName = lead.status?.name || 'Fresh';
-      if (statusName.trim().toLowerCase() !== 'fresh') {
-        throw { status: 403, message: 'DM executives can edit only fresh leads.' };
-      }
-      if (lead.assignedToId !== null && lead.assignedToId !== user.id) {
-        throw { status: 403, message: 'DM executives can edit leads only before they are assigned to others.' };
-      }
-    }
-
     return lead;
   }
 
-  // Other roles can edit only if assigned to them
+  if (user.role === DM_EXECUTIVE_ROLE) {
+    const isVisible = lead.assignedToId === user.id || lead.createdById === user.id;
+    if (!isVisible) {
+      throw { status: 403, message: 'Access denied: You can only edit leads assigned to you or added by you.' };
+    }
+    const statusName = lead.status?.name || 'Fresh';
+    if (statusName.trim().toLowerCase() !== 'fresh') {
+      throw { status: 403, message: 'DM executives can edit only fresh leads.' };
+    }
+    if (lead.assignedToId !== null && lead.assignedToId !== user.id) {
+      throw { status: 403, message: 'DM executives can edit leads only before they are assigned to others.' };
+    }
+    return lead;
+  }
+
   if (lead.assignedToId !== user.id) {
-    throw { status: 403, message: 'Access denied: You can only edit leads assigned to you.' };
+    throw { status: 403, message: 'Access denied: You can only follow up on leads assigned to you.' };
+  }
+
+  if (updatePayload) {
+    const allowedFollowUpFields = ['statusId', 'nextFollowUp', 'contactableDate', 'assignedToId'];
+    const fieldsToUpdate = Object.keys(updatePayload);
+    const invalidFields = fieldsToUpdate.filter(field => !allowedFollowUpFields.includes(field));
+    if (invalidFields.length > 0) {
+      throw { 
+        status: 403, 
+        message: `Access denied: Only Admin, Business Head, and DM Executive (for fresh leads) can edit lead details. Your role (${user.role || 'Unknown'}) can only update follow-up fields (invalid fields: ${invalidFields.join(', ')}).` 
+      };
+    }
   }
 
   return lead;

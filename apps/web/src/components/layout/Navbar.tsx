@@ -32,6 +32,18 @@ const Navbar: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [lastSeenCount, setLastSeenCount] = useState<number>(() => {
+    return parseInt(localStorage.getItem('lastSeenLeadsCount') || '0', 10);
+  });
+
+  useEffect(() => {
+    if (location.pathname === '/leadhub' || location.pathname === '/leads') {
+      if (stats?.totalLeads !== undefined) {
+        localStorage.setItem('lastSeenLeadsCount', String(stats.totalLeads));
+        setLastSeenCount(stats.totalLeads);
+      }
+    }
+  }, [location.pathname, stats?.totalLeads]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -94,8 +106,8 @@ const Navbar: React.FC = () => {
         { title: 'Email Templates', path: '/master/email-template' },
       ]
     }] : []),
-    { title: 'Lead Hub', path: '/leadhub', icon: <Users size={18} />, badge: stats?.totalLeads || undefined },
-    { title: 'Leads', path: '/leads', icon: <User size={18} />, badge: stats?.totalLeads || undefined },
+    { title: 'Lead Hub', path: '/leadhub', icon: <Users size={18} />, badge: (stats?.totalLeads && stats.totalLeads > lastSeenCount) ? stats.totalLeads - lastSeenCount : undefined },
+    { title: 'Leads', path: '/leads', icon: <User size={18} />, badge: (stats?.totalLeads && stats.totalLeads > lastSeenCount) ? stats.totalLeads - lastSeenCount : undefined },
     { title: 'Reminders', path: '/reminders', icon: <Bell size={18} />, badge: stats?.remindersDue || undefined },
     { title: 'Report', path: '/report', icon: <Flag size={18} /> },
   ];

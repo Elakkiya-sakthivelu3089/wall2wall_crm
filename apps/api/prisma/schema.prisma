@@ -74,6 +74,7 @@ model Lead {
   metaAdId        String?
   metaCampaignId  String?
   metaAdAccountId String?
+  orderValue      Float?
 }
 
 model Task {

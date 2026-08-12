@@ -42,7 +42,6 @@ const getLeadStatusName = (lead: Lead | null) => {
 const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
   const { user: currentUser } = useAuth();
   const isDmEmployee = currentUser?.role === 'DM_EXECUTIVE';
-  const isCre = currentUser?.role === 'CRE';
   const statusName = getLeadStatusName(lead);
   const isFreshLead = statusName.trim().toLowerCase() === 'fresh';
   const isOwnerOrAssignee = lead ? (lead.assignedToId === currentUser?.id || lead.createdById === currentUser?.id) : false;
@@ -50,14 +49,10 @@ const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
   let canEditLead = false;
   if (currentUser?.role === 'ADMIN') {
     canEditLead = true;
-  } else if (!isCre && lead) {
-    if (isDmEmployee) {
-      canEditLead = isFreshLead && isOwnerOrAssignee;
-    } else if (currentUser?.role === 'BUSINESS_HEAD' || currentUser?.role === 'DESIGNER') {
-      canEditLead = isOwnerOrAssignee;
-    } else {
-      canEditLead = lead.assignedToId === currentUser?.id;
-    }
+  } else if (currentUser?.role === 'BUSINESS_HEAD' && lead) {
+    canEditLead = isOwnerOrAssignee;
+  } else if (isDmEmployee && lead) {
+    canEditLead = isFreshLead && isOwnerOrAssignee;
   }
   const [modalType, setModalType] = useState<'FOLLOWUP' | 'REMINDER' | 'STATUS' | 'NOTE' | 'SWITCH_USER' | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -99,11 +94,11 @@ const LeadDetailView: FC<LeadDetailViewProps> = ({ lead, onRefresh }) => {
            
            <div className="flex flex-col items-end gap-1">
               <div className="flex text-warning gap-0.5">
-                {[...Array(10)].map((_, i) => (
+                {[...Array(5)].map((_, i) => (
                   <Star key={i} size={10} fill={i < (lead.rating || 0) ? "currentColor" : "none"} />
                 ))}
               </div>
-              <span className="text-[9px] font-bold text-gray-400 uppercase">Rating ({lead.rating}/10)</span>
+              <span className="text-[9px] font-bold text-gray-400 uppercase">Rating ({lead.rating}/5)</span>
            </div>
         </div>
 

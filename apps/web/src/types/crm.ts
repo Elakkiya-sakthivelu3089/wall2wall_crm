@@ -50,6 +50,7 @@ export interface Lead {
   rating: number;
   nextFollowUp: string | null;
   assignedToId?: string | null;
+  createdById?: string | null;
   assignedTo?: UserBasic | null;
   createdBy?: UserBasic | null;
   status: LeadStatus | string | null;
@@ -71,6 +72,7 @@ export interface Lead {
   createdAt: string;
   updatedAt: string;
   activities?: LeadActivity[];
+  orderValue?: number | null;
 }
 
 export interface MasterData {

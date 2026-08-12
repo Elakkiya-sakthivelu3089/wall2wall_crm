@@ -11,6 +11,7 @@ type SendMetaLeadInput = {
   ip?: string | undefined;
   userAgent?: string | undefined;
   metaLeadId?: string | undefined;
+  value?: number | undefined;
 };
 
 export const sendMetaLead = async ({
@@ -23,8 +24,9 @@ export const sendMetaLead = async ({
   ip,
   userAgent,
   metaLeadId,
+  value,
 }: SendMetaLeadInput) => {
-  const { pixelId, accessToken, testEventCode } = getMetaConfig();
+  const { pixelId, accessToken } = getMetaConfig();
 
   if (!pixelId || !accessToken) {
     throw new Error('Meta pixel ID and access token are required');
@@ -40,6 +42,12 @@ export const sendMetaLead = async ({
   if (userAgent) userData.client_user_agent = userAgent;
   if (metaLeadId) userData.lead_id = metaLeadId;
 
+  const customData: Record<string, any> = {};
+  if (eventName === 'Purchase') {
+    customData.currency = 'INR';
+    customData.value = value !== undefined && value !== null ? value : 100.0;
+  }
+
   const payload = {
     data: [
       {
@@ -49,9 +57,10 @@ export const sendMetaLead = async ({
         action_source: source,
         event_source_url: pageUrl,
         user_data: userData,
+        ...(Object.keys(customData).length > 0 ? { custom_data: customData } : {}),
       },
     ],
-    ...(testEventCode ? { test_event_code: testEventCode } : {}),
+    // ...(testEventCode ? { test_event_code: testEventCode } : {}),
   };
 
   console.log('Meta payload:', JSON.stringify(payload, null, 2));

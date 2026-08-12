@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { leadService } from '../services/api';
 import { Bell, Phone, Calendar, ChevronLeft, ChevronRight, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import ActionModal from '../components/modals/ActionModal';
 
 const Reminders: React.FC = () => {
     const [leads, setLeads] = useState<any[]>([]);
@@ -9,6 +10,22 @@ const Reminders: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedLead, setSelectedLead] = useState<any>(null);
     const [timeframe, setTimeframe] = useState<'overdue' | 'today' | 'tomorrow' | 'week'>('today');
+    const [modalType, setModalType] = useState<'FOLLOWUP' | 'REMINDER' | null>(null);
+
+    const handleDismissReminder = async (leadId: string) => {
+        if (!window.confirm('Are you sure you want to mark this reminder as completed?')) return;
+        try {
+            await leadService.updateLead(leadId, { contactableDate: null });
+            await leadService.addLeadActivity(leadId, {
+                type: 'NOTE',
+                content: 'Reminder marked as completed/dismissed'
+            });
+            fetchReminders();
+        } catch (error) {
+            console.error('Error completing reminder:', error);
+            alert('Failed to complete reminder.');
+        }
+    };
 
     const fetchReminders = useCallback(async () => {
         setIsLoading(true);
@@ -178,12 +195,32 @@ const Reminders: React.FC = () => {
                                             );
                                         })()}
                                     </div>
-                                    <a
-                                        href={`tel:${selectedLead.phone}`}
-                                        className="flex items-center gap-2 bg-[#006039] text-white px-4 py-2 rounded text-[10px] font-bold uppercase"
-                                    >
-                                        <Phone size={14} /> Call Now
-                                    </a>
+                                    <div className="flex flex-wrap gap-2">
+                                        <a
+                                            href={`tel:${selectedLead.phone}`}
+                                            className="flex items-center gap-2 bg-[#006039] text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase hover:bg-[#004d30] transition-colors"
+                                        >
+                                            <Phone size={14} /> Call Now
+                                        </a>
+                                        <button
+                                            onClick={() => setModalType('FOLLOWUP')}
+                                            className="flex items-center gap-2 bg-brand text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase hover:bg-brand/90 transition-colors"
+                                        >
+                                            <Calendar size={14} /> Followup
+                                        </button>
+                                        <button
+                                            onClick={() => setModalType('REMINDER')}
+                                            className="flex items-center gap-2 bg-amber-500 text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase hover:bg-amber-600 transition-colors"
+                                        >
+                                            <Bell size={14} /> Reschedule
+                                        </button>
+                                        <button
+                                            onClick={() => handleDismissReminder(selectedLead.id)}
+                                            className="flex items-center gap-2 bg-danger text-white px-3 py-1.5 rounded text-[10px] font-bold uppercase hover:bg-danger/90 transition-colors"
+                                        >
+                                            <CheckCircle2 size={14} /> Complete
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -256,6 +293,18 @@ const Reminders: React.FC = () => {
                     )}
                 </div>
             </div>
+            {modalType && selectedLead && (
+                <ActionModal 
+                    isOpen={modalType !== null}
+                    onClose={() => setModalType(null)}
+                    onSuccess={() => {
+                        setModalType(null);
+                        fetchReminders();
+                    }}
+                    lead={selectedLead}
+                    type={modalType}
+                />
+            )}
         </div>
     );
 };
