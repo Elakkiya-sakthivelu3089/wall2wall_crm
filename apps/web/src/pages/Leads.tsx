@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import LeadDetailView from '../components/crm/LeadDetailView';
 import { leadService } from '../services/api';
 import type { Lead } from '../types/crm';
@@ -22,6 +22,8 @@ const Leads: React.FC = () => {
   const [masters, setMasters] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const selectedLeadRef = useRef<Lead | null>(null);
+  selectedLeadRef.current = selectedLead;
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [counts, setCounts] = useState<any>({ today: 0, tomorrow: 0, week: 0, month: 0 });
 
@@ -39,7 +41,7 @@ const Leads: React.FC = () => {
 
   const [activeView, setActiveView] = useState<'LIST' | 'DETAIL'>('LIST');
 
-  const fetchLeads = async () => {
+  const fetchLeads = async (forceSelectId?: string) => {
     setIsLoading(true);
     try {
       const res = await leadService.getLeads({ 
@@ -59,8 +61,24 @@ const Leads: React.FC = () => {
       setLeads(res.data);
       setTotal(res.total);
       
-      if (res.data.length > 0 && !selectedLead && window.innerWidth >= 1024) {
-        fetchLeadDetail(res.data[0].id);
+      if (res.data.length > 0) {
+        const targetId = forceSelectId || selectedLeadRef.current?.id;
+        const isStillInList = targetId ? res.data.some((l: Lead) => l.id === targetId) : false;
+        
+        if (!isStillInList) {
+          if (window.innerWidth >= 1024) {
+            fetchLeadDetail(res.data[0].id);
+          } else {
+            setSelectedLead(null);
+          }
+        } else if (forceSelectId) {
+          fetchLeadDetail(forceSelectId);
+        }
+      } else {
+        setSelectedLead(null);
+        if (window.innerWidth < 1024) {
+          setActiveView('LIST');
+        }
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
@@ -102,6 +120,11 @@ const Leads: React.FC = () => {
     };
     init();
   }, []);
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusId, brandId, projectId, tagId, stageId, rating, timeframe, contactDate, selectedUserId]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -303,9 +326,12 @@ const Leads: React.FC = () => {
                <LeadDetailView 
                  lead={selectedLead} 
                  onRefresh={() => {
-                   fetchLeads();
                    fetchCounts();
-                   if (selectedLead) fetchLeadDetail(selectedLead.id);
+                   if (selectedLeadRef.current) {
+                     fetchLeads(selectedLeadRef.current.id);
+                   } else {
+                     fetchLeads();
+                   }
                  }} 
                />
            )}
