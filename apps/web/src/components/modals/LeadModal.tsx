@@ -94,7 +94,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
         metaAdId: lead.metaAdId || '',
         metaCampaignId: lead.metaCampaignId || '',
         metaAdAccountId: lead.metaAdAccountId || '',
-        nextFollowUp: lead.nextFollowUp ? new Date(lead.nextFollowUp).toISOString().split('T')[0] : '',
+        nextFollowUp: toLocalISOString(lead.nextFollowUp),
         tagIds: lead.tags?.map((t: any) => t.id) || [],
         comments: lead.comments || '',
         instructionToPass: lead.instructionToPass || '',
@@ -136,7 +136,8 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
       const payload = {
         ...formData,
         ratingName: formData.ratingName || getRatingName(formData.rating),
-        contactableDate: formData.contactableDate ? new Date(formData.contactableDate).toISOString() : null,
+        nextFollowUp: formData.nextFollowUp ? new Date(formData.nextFollowUp).toISOString() : null,
+        contactableDate: formData.nextFollowUp ? new Date(formData.nextFollowUp).toISOString() : null,
       };
       if (lead?.id) {
         await (leadService as any).updateLead(lead.id, payload);
@@ -165,7 +166,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="!text-white bg-[#3b3e47] p-4 flex items-center justify-between ">
-          <h4 className="text-sm font-bold uppercase m-0">{lead ? 'Edit Lead' : 'Create New Lead'}</h4>
+          <h4 className="text-sm font-bold text-white uppercase m-0">{lead ? 'Edit Lead' : 'Create New Lead'}</h4>
           <button onClick={onClose} className="text-white opacity-50 hover:opacity-100">
             <X size={20} />
           </button>
@@ -261,10 +262,13 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
             <div className="space-y-1">
               <label className="text-[10px] font-bold text-gray-400 uppercase">Next Follow Up</label>
               <input 
-                type="date"
+                type="datetime-local"
                 className="form-control !py-1.5 !text-[12px]"
                 value={formData.nextFollowUp}
-                onChange={(e) => setFormData({...formData, nextFollowUp: e.target.value})}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData({ ...formData, nextFollowUp: val, contactableDate: val });
+                }}
               />
             </div>
 
@@ -279,16 +283,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold text-gray-400 uppercase">Contactable Date & Time <span className="text-red-500">*</span></label>
-              <input 
-                required
-                type="datetime-local"
-                className="form-control !py-1.5 !text-[12px]"
-                value={formData.contactableDate}
-                onChange={(e) => setFormData({...formData, contactableDate: e.target.value})}
-              />
-            </div>
+
 
             {(userRole === 'ADMIN' || userRole === 'BUSINESS_HEAD' || userRole === 'CRE' || userRole === 'DESIGNER') && (
               <div className="space-y-1">

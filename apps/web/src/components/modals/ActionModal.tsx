@@ -162,7 +162,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ isOpen, onClose, onSuccess, l
                 {getIcon()}
              </div>
              <div>
-                <h3 className="text-xl font-bold font-rubik uppercase tracking-tight">{getTitle()}</h3>
+                <h3 className="text-xl font-bold text-white font-rubik uppercase tracking-tight">{getTitle()}</h3>
                 <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Action Matrix Protocol</p>
              </div>
           </div>

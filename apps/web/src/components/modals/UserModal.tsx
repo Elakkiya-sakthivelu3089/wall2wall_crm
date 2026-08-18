@@ -115,7 +115,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess, user 
                 <UserPlus className="w-6 h-6" />
              </div>
              <div>
-                <h3 className="text-lg font-bold font-rubik uppercase tracking-widest leading-none">
+                <h3 className="text-lg font-bold text-white font-rubik uppercase tracking-widest leading-none">
                   {user ? 'Edit User Profile' : 'Create New User'}
                 </h3>
                 <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em] mt-1 font-bold">

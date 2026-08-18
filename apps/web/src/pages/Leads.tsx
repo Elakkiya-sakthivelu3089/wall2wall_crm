@@ -155,7 +155,7 @@ const Leads: React.FC = () => {
            )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-8 gap-3 pt-3 border-t border-gray-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3 pt-3 border-t border-gray-100">
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-gray-400 uppercase">Brand</label>
             <select value={brandId} onChange={(e) => setBrandId(e.target.value)} className="form-control !py-1 !px-2 !text-[11px]">
@@ -251,7 +251,7 @@ const Leads: React.FC = () => {
       </div>
 
       {/* View Toggle for Mobile/Tablet */}
-      <div className="2xl:hidden flex bg-white border border-gray-100 p-1 rounded-lg">
+      <div className="lg:hidden flex bg-white border border-gray-100 p-1 rounded-lg">
         <button 
           onClick={() => setActiveView('LIST')}
           className={`flex-1 py-2 text-[11px] font-bold uppercase tracking-wider rounded-md transition-all ${activeView === 'LIST' ? 'bg-brand text-white' : 'text-gray-400'}`}
@@ -268,7 +268,7 @@ const Leads: React.FC = () => {
 
       <div className="grid grid-cols-12 gap-4 md:gap-6 min-h-[600px]">
         {/* Left Column: List */}
-        <div className={`col-span-12 2xl:col-span-4 flex flex-col bg-white border border-gray-100 shadow-sm h-[calc(100vh-320px)] ${activeView === 'DETAIL' ? 'hidden 2xl:flex' : 'flex'}`}>
+        <div className={`col-span-12 lg:col-span-4 flex flex-col bg-white border border-gray-100 shadow-sm h-[calc(100vh-320px)] ${activeView === 'DETAIL' ? 'hidden lg:flex' : 'flex'}`}>
           <div className="p-3 border-b border-gray-50 bg-[#f8f9fa] flex items-center justify-between">
              <div className="flex items-center gap-2 text-[10px] md:text-[11px] font-bold text-gray-500">
                 Show <select className="border border-gray-200 rounded px-1"><option>10</option></select> entries
@@ -317,7 +317,7 @@ const Leads: React.FC = () => {
         </div>
 
         {/* Right Column: Lead Details */}
-        <div className={`col-span-12 2xl:col-span-8 h-[calc(100vh-320px)] ${activeView === 'LIST' ? 'hidden 2xl:block' : 'block'}`}>
+        <div className={`col-span-12 lg:col-span-8 h-[calc(100vh-320px)] ${activeView === 'LIST' ? 'hidden lg:block' : 'block'}`}>
            {isDetailLoading ? (
                <div className="h-full bg-white border border-gray-100 flex items-center justify-center">
                     <div className="w-8 h-8 border-3 border-brand border-t-transparent animate-spin rounded-full" />

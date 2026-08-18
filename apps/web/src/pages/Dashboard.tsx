@@ -117,8 +117,8 @@ const Dashboard: React.FC = () => {
             to={tile.path}
             className="tilebox-one group cursor-pointer hover:shadow-md transition-shadow !p-4 md:!p-6 block relative"
           >
-            <div className="absolute right-3 top-3 md:right-5 md:top-5 text-gray-200 group-hover:text-brand transition-colors opacity-50 md:opacity-100">
-              {React.cloneElement(tile.icon as React.ReactElement<any>, { size: window.innerWidth < 768 ? 24 : 32 })}
+            <div className="absolute right-3 top-3 md:right-5 md:top-5 text-gray-200 group-hover:text-brand transition-colors opacity-50 md:opacity-100 [&_svg]:w-6 [&_svg]:h-6 md:[&_svg]:w-8 md:[&_svg]:h-8">
+              {tile.icon}
             </div>
             <h6 className="text-gray-400 text-[9px] md:text-xs font-bold uppercase mt-0 mb-2 md:mb-3 tracking-wider">{tile.label}</h6>
             <h2 className="text-xl md:text-3xl font-bold text-gray-700 m-0">{tile.value}</h2>
