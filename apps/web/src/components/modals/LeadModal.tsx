@@ -222,6 +222,20 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
             </div>
 
             <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-400 uppercase">Status</label>
+              <select 
+                className="form-control !py-1.5 !text-[12px]"
+                value={formData.statusId}
+                onChange={(e) => setFormData({...formData, statusId: e.target.value})}
+              >
+                <option value="">Fresh (Default)</option>
+                {masters?.statuses?.map((s: any) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
               <label className="text-[10px] font-bold text-gray-400 uppercase">Brand <span className="text-red-500">*</span></label>
               <select 
                 required
@@ -283,8 +297,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
               />
             </div>
 
-
-
             {(userRole === 'ADMIN' || userRole === 'BUSINESS_HEAD' || userRole === 'CRE' || userRole === 'DESIGNER') && (
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-gray-400 uppercase">Assigned To</label>
@@ -295,7 +307,9 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, onSuccess, lead 
                 >
                   <option value="">Unassigned</option>
                   {masters?.users?.map((u: any) => (
-                    <option key={u.id} value={u.id}>{u.fullName} ({u.role})</option>
+                    <option key={u.id} value={u.id}>
+                      {u.fullName} {u.email ? `(${u.email})` : ''} — {u.role}
+                    </option>
                   ))}
                 </select>
               </div>

@@ -102,6 +102,20 @@ export const leadService = {
     return response.data.data;
   },
 
+  importLeads: async (payload: {
+    leads: any[];
+    defaultStatusId?: string | null;
+    defaultAssignedToId?: string | null;
+    defaultEmployeeEmail?: string | null;
+    defaultBrandId?: string | null;
+    defaultSourceId?: string | null;
+    defaultProjectId?: string | null;
+    skipDuplicates?: boolean;
+  }): Promise<any> => {
+    const response = await axios.post(`${API_BASE_URL}/leads/import`, payload);
+    return response.data;
+  },
+
   assignLead: async (leadId: string, userId: string): Promise<any> => {
     const response = await axios.put(`${API_BASE_URL}/leads/${leadId}/assign`, { user_id: userId });
     return response.data.data;

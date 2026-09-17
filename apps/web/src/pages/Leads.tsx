@@ -5,9 +5,11 @@ import type { Lead } from '../types/crm';
 import { 
   Search, 
   Plus,
-  ChevronRight
+  ChevronRight,
+  Upload
 } from 'lucide-react';
 import LeadModal from '../components/modals/LeadModal';
+import UploadLeadModal from '../components/modals/UploadLeadModal';
 import { useAuth } from '../contexts/AuthContext';
 
 interface MasterItem { id: string; name: string; }
@@ -21,6 +23,7 @@ const Leads: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [masters, setMasters] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const selectedLeadRef = useRef<Lead | null>(null);
   selectedLeadRef.current = selectedLead;
@@ -146,12 +149,20 @@ const Leads: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
            <h4 className="text-sm md:text-base font-bold text-gray-700 uppercase m-0">Leads</h4>
            {['ADMIN', 'DM_EXECUTIVE', 'BUSINESS_HEAD', 'DESIGNER'].includes(user?.role || '') && (
-             <button 
-               onClick={() => setIsModalOpen(true)}
-               className="btn-custom !rounded !py-1 text-[10px] md:text-[11px] flex items-center gap-2"
-             >
-               <Plus size={14} /> Create Lead
-             </button>
+             <div className="flex items-center gap-2">
+               <button 
+                 onClick={() => setIsUploadModalOpen(true)}
+                 className="btn-custom !bg-white !text-brand border border-brand/30 hover:!bg-brand/5 !rounded !py-1 text-[10px] md:text-[11px] flex items-center gap-1.5"
+               >
+                 <Upload size={14} /> Upload Leads
+               </button>
+               <button 
+                 onClick={() => setIsModalOpen(true)}
+                 className="btn-custom !rounded !py-1 text-[10px] md:text-[11px] flex items-center gap-2"
+               >
+                 <Plus size={14} /> Create Lead
+               </button>
+             </div>
            )}
         </div>
 
@@ -356,6 +367,12 @@ const Leads: React.FC = () => {
       </div>
 
       <LeadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={() => { fetchLeads(); fetchCounts(); setIsModalOpen(false); }} />
+      <UploadLeadModal 
+        isOpen={isUploadModalOpen} 
+        onClose={() => setIsUploadModalOpen(false)} 
+        onSuccess={() => { fetchLeads(); fetchCounts(); setIsUploadModalOpen(false); }} 
+        masters={masters} 
+      />
     </div>
   );
 };

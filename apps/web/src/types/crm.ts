@@ -18,7 +18,7 @@ export interface LeadStatus { id: string; name: string; color?: string; }
 export interface Stage { id: string; name: string; }
 
 export type Role = 'ADMIN' | 'CRE' | 'DESIGNER' | 'BUSINESS_HEAD' | 'DM_EXECUTIVE';
-export interface UserBasic { id: string; fullName: string; role?: Role; }
+export interface UserBasic { id: string; fullName: string; role?: Role; email?: string; }
 
 export interface User {
   id: string;
